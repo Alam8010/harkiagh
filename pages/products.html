@@ -51,6 +51,16 @@
     .page-body { padding:28px 32px; }
     @media (max-width:900px) { .page-body{padding:16px;} .topbar{padding:0 16px;} }
 
+    .mini-stats { display:flex; gap:14px; margin-bottom:24px; flex-wrap:wrap; }
+    .mini-stat { background:var(--dark2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; display:flex; align-items:center; gap:12px; flex:1; min-width:120px; }
+    .mini-stat-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .mini-stat-icon svg { width:18px; height:18px; }
+    .mini-stat-icon.green { background:rgba(0,230,118,0.1); } .mini-stat-icon.green svg { fill:var(--green); }
+    .mini-stat-icon.warning { background:rgba(255,179,0,0.1); } .mini-stat-icon.warning svg { fill:var(--warning); }
+    .mini-stat-icon.danger { background:rgba(255,59,59,0.1); } .mini-stat-icon.danger svg { fill:var(--danger); }
+    .mini-stat-val { font-family:'Bebas Neue',sans-serif; font-size:24px; line-height:1; }
+    .mini-stat-label { font-size:11px; color:var(--gray); }
+
     .filter-bar { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
     .search-box { flex:1; min-width:200px; display:flex; align-items:center; gap:10px; background:var(--dark2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; }
     .search-box svg { width:16px; height:16px; fill:var(--gray); flex-shrink:0; }
@@ -60,16 +70,19 @@
     .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
     .product-card { background:var(--dark2); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:border-color 0.15s; }
     .product-card:hover { border-color:rgba(255,255,255,0.12); }
-    .product-img { height:160px; background:var(--dark3); position:relative; }
+    .product-img { height:180px; background:var(--dark3); position:relative; overflow:hidden; }
     .product-img img { width:100%; height:100%; object-fit:cover; }
-    .product-img-placeholder { height:160px; display:flex; align-items:center; justify-content:center; background:var(--dark3); }
+    .product-img-placeholder { height:180px; display:flex; align-items:center; justify-content:center; background:var(--dark3); }
     .product-img-placeholder svg { width:36px; height:36px; fill:rgba(255,255,255,0.06); }
+    .img-count-badge { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,0.7); color:var(--white); font-size:11px; font-weight:600; padding:3px 8px; border-radius:100px; }
+    .pending-badge { position:absolute; top:8px; left:8px; background:rgba(255,179,0,0.9); color:#000; font-size:10px; font-weight:700; padding:3px 8px; border-radius:100px; letter-spacing:0.5px; text-transform:uppercase; }
     .product-info { padding:14px; }
     .product-cat { font-size:10px; font-weight:600; color:var(--green); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
     .product-name { font-size:15px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .product-price { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--green); margin-bottom:10px; }
+    .product-price { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--green); margin-bottom:6px; }
     .product-stock { font-size:12px; color:var(--gray); margin-bottom:10px; }
     .product-stock.low { color:var(--warning); }
+    .product-stock.out { color:var(--danger); }
     .product-actions { display:flex; gap:8px; }
     .edit-btn { flex:1; padding:8px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; color:var(--white); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; text-align:center; }
     .edit-btn:hover { background:rgba(255,255,255,0.1); }
@@ -77,7 +90,7 @@
     .delete-btn:hover { background:rgba(255,59,59,0.15); }
     .delete-btn svg { width:14px; height:14px; fill:currentColor; }
 
-    .empty-state { text-align:center; padding:80px 20px; }
+    .empty-state { grid-column:1/-1; text-align:center; padding:80px 20px; }
     .empty-icon { width:64px; height:64px; background:rgba(255,255,255,0.04); border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
     .empty-icon svg { width:32px; height:32px; fill:var(--gray); }
     .empty-title { font-size:18px; font-weight:600; margin-bottom:8px; }
@@ -86,7 +99,7 @@
     /* MODAL */
     .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:300; display:none; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); }
     .modal-overlay.open { display:flex; }
-    .modal { background:var(--dark2); border:1px solid var(--border); border-radius:16px; width:100%; max-width:480px; overflow:hidden; max-height:90vh; overflow-y:auto; }
+    .modal { background:var(--dark2); border:1px solid var(--border); border-radius:16px; width:100%; max-width:520px; overflow:hidden; max-height:90vh; overflow-y:auto; }
     .modal-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--dark2); z-index:1; }
     .modal-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
     .modal-close { width:32px; height:32px; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--gray); font-size:18px; }
@@ -102,6 +115,19 @@
     .field input::placeholder, .field textarea::placeholder { color:rgba(255,255,255,0.2); }
     .field input:focus, .field textarea:focus, .field select:focus { border-color:rgba(0,230,118,0.4); background:rgba(0,230,118,0.04); }
     .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    /* IMAGE UPLOAD */
+    .img-upload-area { border:1px dashed rgba(255,255,255,0.15); border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s, background 0.2s; margin-bottom:10px; }
+    .img-upload-area:hover { border-color:rgba(0,230,118,0.3); background:rgba(0,230,118,0.03); }
+    .img-upload-area svg { width:28px; height:28px; fill:var(--gray); margin-bottom:8px; }
+    .img-upload-area p { font-size:13px; color:var(--gray); margin-bottom:4px; }
+    .img-upload-area span { font-size:11px; color:rgba(255,255,255,0.25); }
+    .img-previews { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .img-preview-item { width:80px; height:80px; border-radius:8px; overflow:hidden; position:relative; border:1px solid var(--border); }
+    .img-preview-item img { width:100%; height:100%; object-fit:cover; }
+    .remove-img { position:absolute; top:2px; right:2px; width:20px; height:20px; background:rgba(0,0,0,0.75); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:var(--white); border:none; line-height:1; }
+    .uploading-indicator { font-size:12px; color:var(--green); margin-top:8px; display:none; }
+
     .submit-btn { flex:1; padding:12px; background:var(--green); color:var(--dark); border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.15s; }
     .submit-btn:hover { background:var(--green-dark); }
     .submit-btn:disabled { opacity:0.6; cursor:not-allowed; }
@@ -110,13 +136,6 @@
     .msg { padding:10px 14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:14px; display:none; }
     .msg.error { background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.2); color:var(--danger); display:block; }
     .msg.success { background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2); color:var(--green); display:block; }
-
-    .img-upload-area { border:2px dashed rgba(255,255,255,0.1); border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.15s; }
-    .img-upload-area:hover { border-color:rgba(0,230,118,0.3); }
-    .img-preview { width:100%; max-height:160px; object-fit:cover; border-radius:8px; margin-bottom:8px; display:none; }
-    .img-upload-text { font-size:13px; color:var(--gray); }
-    #img-file-input { display:none; }
-    .img-upload-progress { font-size:12px; color:var(--green); margin-top:8px; display:none; }
 
     #loading { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:999; }
     .spinner { width:32px; height:32px; border:2px solid rgba(255,255,255,0.1); border-top-color:var(--green); border-radius:50%; animation:spin 0.7s linear infinite; }
@@ -172,12 +191,16 @@
       <div class="page-sub" id="products-count">0 products</div>
     </div>
     <button class="add-btn" onclick="openAddModal()">
-      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-      Add Product
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Add Product
     </button>
   </div>
-
   <div class="page-body">
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="mini-stat-icon green"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><div><div class="mini-stat-val" id="stat-total">0</div><div class="mini-stat-label">Total</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-icon green"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4z"/></svg></div><div><div class="mini-stat-val" id="stat-instock">0</div><div class="mini-stat-label">In Stock</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-icon warning"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div><div><div class="mini-stat-val" id="stat-low">0</div><div class="mini-stat-label">Low Stock</div></div></div>
+      <div class="mini-stat"><div class="mini-stat-icon danger"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div><div><div class="mini-stat-val" id="stat-out">0</div><div class="mini-stat-label">Out of Stock</div></div></div>
+    </div>
     <div class="filter-bar">
       <div class="search-box">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -197,22 +220,22 @@
     </div>
     <div class="modal-body">
       <div class="msg" id="modal-msg"></div>
-      <input type="file" id="img-file-input" accept="image/*" onchange="uploadImage(this)" />
       <div class="field">
-        <label>Product Image</label>
+        <label>Product Images (up to 4)</label>
         <div class="img-upload-area" onclick="document.getElementById('img-file-input').click()">
-          <img id="img-preview" class="img-preview" />
-          <div id="img-upload-placeholder">
-            <div class="img-upload-text">Click to upload product image</div>
-          </div>
-          <div class="img-upload-progress" id="img-upload-progress">Uploading...</div>
+          <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+          <p>Click to upload images</p>
+          <span>PNG, JPG up to 5MB each — max 4 images</span>
         </div>
+        <input type="file" id="img-file-input" accept="image/*" multiple style="display:none" onchange="handleImageUpload(this)" />
+        <div class="uploading-indicator" id="uploading-indicator">⏳ Uploading images...</div>
+        <div class="img-previews" id="img-previews"></div>
       </div>
       <div class="field"><label>Product Name *</label><input type="text" id="prod-name" placeholder="e.g. Blue Cotton T-Shirt" /></div>
       <div class="field"><label>Description</label><textarea id="prod-desc" placeholder="Describe your product..."></textarea></div>
       <div class="field-row">
         <div class="field"><label>Price (PKR) *</label><input type="number" id="prod-price" placeholder="0" min="0" /></div>
-        <div class="field"><label>Stock Quantity</label><input type="number" id="prod-stock" placeholder="e.g. 10" min="0" /></div>
+        <div class="field"><label>Stock Quantity *</label><input type="number" id="prod-stock" placeholder="e.g. 10" min="0" /></div>
       </div>
       <div class="field"><label>Category</label><input type="text" id="prod-category" placeholder="e.g. Shirts, Shoes, Electronics" /></div>
     </div>
@@ -228,7 +251,7 @@
   let storeId = null;
   let allProducts = [];
   let editingProductId = null;
-  let currentImageUrl = null;
+  let uploadedImageUrls = [];
 
   async function init() {
     const { data: { session } } = await _supabase.auth.getSession();
@@ -248,7 +271,15 @@
   async function loadProducts() {
     const { data } = await _supabase.from('products').select('*').eq('store_id', storeId).order('created_at', { ascending: false });
     allProducts = data || [];
+    updateStats();
     renderProducts();
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = allProducts.length;
+    document.getElementById('stat-instock').textContent = allProducts.filter(p => p.stock > 5).length;
+    document.getElementById('stat-low').textContent = allProducts.filter(p => p.stock > 0 && p.stock <= 5).length;
+    document.getElementById('stat-out').textContent = allProducts.filter(p => p.stock !== null && p.stock <= 0).length;
   }
 
   function renderProducts() {
@@ -257,37 +288,51 @@
     document.getElementById('products-count').textContent = `${allProducts.length} product${allProducts.length !== 1 ? 's' : ''}`;
     const grid = document.getElementById('products-grid');
     if (!filtered.length) {
-      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><div class="empty-title">${allProducts.length ? 'No results' : 'No products yet'}</div><div class="empty-sub">${allProducts.length ? 'Try a different search.' : 'Add your first product to get started.'}</div></div>`;
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><div class="empty-title">${allProducts.length ? 'No results' : 'No products yet'}</div><div class="empty-sub">${allProducts.length ? 'Try a different search.' : 'Click Add Product to get started.'}</div></div>`;
       return;
     }
-    grid.innerHTML = filtered.map(p => `
-      <div class="product-card">
-        ${p.image_url ? `<div class="product-img"><img src="${p.image_url}" alt="${p.name}" /></div>` : `<div class="product-img-placeholder"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>`}
-        <div class="product-info">
-          ${p.category ? `<div class="product-cat">${p.category}</div>` : ''}
-          <div class="product-name">${p.name}</div>
-          <div class="product-price">PKR ${Number(p.price).toLocaleString()}</div>
-          <div class="product-stock ${p.stock !== null && p.stock <= 5 ? 'low' : ''}">Stock: ${p.stock !== null ? p.stock : '∞'}</div>
-          <div class="product-actions">
-            <div class="edit-btn" onclick="openEditModal('${p.id}')">Edit</div>
-            <div class="delete-btn" onclick="deleteProduct('${p.id}')"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>
+    grid.innerHTML = filtered.map(p => {
+      const imgs = p.image_urls || (p.image_url ? [p.image_url] : []);
+      const stockClass = p.stock <= 0 ? 'out' : p.stock <= 5 ? 'low' : '';
+      const stockText = p.stock === null ? 'Unlimited stock' : p.stock <= 0 ? 'Out of stock' : p.stock <= 5 ? `Low stock: ${p.stock} left` : `Stock: ${p.stock}`;
+      return `
+        <div class="product-card">
+          ${imgs.length ? `
+            <div class="product-img">
+              <img src="${imgs[0]}" alt="${p.name}" />
+              ${imgs.length > 1 ? `<div class="img-count-badge">+${imgs.length - 1} more</div>` : ''}
+              ${!p.is_approved ? `<div class="pending-badge">Pending Approval</div>` : ''}
+            </div>` : `
+            <div class="product-img-placeholder">
+              <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              ${!p.is_approved ? `<div class="pending-badge" style="position:relative;top:auto;left:auto;margin-top:8px">Pending Approval</div>` : ''}
+            </div>`
+          }
+          <div class="product-info">
+            ${p.category ? `<div class="product-cat">${p.category}</div>` : ''}
+            <div class="product-name">${p.name}</div>
+            <div class="product-price">PKR ${Number(p.price).toLocaleString()}</div>
+            <div class="product-stock ${stockClass}">${stockText}</div>
+            <div class="product-actions">
+              <div class="edit-btn" onclick="openEditModal('${p.id}')">Edit</div>
+              <div class="delete-btn" onclick="deleteProduct('${p.id}')"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div>
+            </div>
           </div>
-        </div>
-      </div>
-    `).join('');
+        </div>`;
+    }).join('');
   }
 
   function openAddModal() {
     editingProductId = null;
-    currentImageUrl = null;
+    uploadedImageUrls = [];
     document.getElementById('modal-title').textContent = 'Add Product';
+    document.getElementById('save-product-btn').textContent = 'Save Product';
     document.getElementById('prod-name').value = '';
     document.getElementById('prod-desc').value = '';
     document.getElementById('prod-price').value = '';
     document.getElementById('prod-stock').value = '';
     document.getElementById('prod-category').value = '';
-    document.getElementById('img-preview').style.display = 'none';
-    document.getElementById('img-upload-placeholder').style.display = 'block';
+    document.getElementById('img-previews').innerHTML = '';
     document.getElementById('modal-msg').className = 'msg';
     document.getElementById('product-modal').classList.add('open');
   }
@@ -296,23 +341,16 @@
     const p = allProducts.find(x => x.id === productId);
     if (!p) return;
     editingProductId = productId;
-    currentImageUrl = p.image_url;
+    uploadedImageUrls = p.image_urls || (p.image_url ? [p.image_url] : []);
     document.getElementById('modal-title').textContent = 'Edit Product';
+    document.getElementById('save-product-btn').textContent = 'Update Product';
     document.getElementById('prod-name').value = p.name;
     document.getElementById('prod-desc').value = p.description || '';
     document.getElementById('prod-price').value = p.price;
     document.getElementById('prod-stock').value = p.stock !== null ? p.stock : '';
     document.getElementById('prod-category').value = p.category || '';
-    if (p.image_url) {
-      const img = document.getElementById('img-preview');
-      img.src = p.image_url;
-      img.style.display = 'block';
-      document.getElementById('img-upload-placeholder').style.display = 'none';
-    } else {
-      document.getElementById('img-preview').style.display = 'none';
-      document.getElementById('img-upload-placeholder').style.display = 'block';
-    }
     document.getElementById('modal-msg').className = 'msg';
+    renderImagePreviews();
     document.getElementById('product-modal').classList.add('open');
   }
 
@@ -320,45 +358,73 @@
     document.getElementById('product-modal').classList.remove('open');
   }
 
-  async function uploadImage(input) {
-    const file = input.files[0];
-    if (!file) return;
-    document.getElementById('img-upload-progress').style.display = 'block';
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_PRESET);
-    formData.append('folder', 'harkiagh/products');
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:formData });
-      const data = await res.json();
-      currentImageUrl = data.secure_url;
-      const img = document.getElementById('img-preview');
-      img.src = currentImageUrl;
-      img.style.display = 'block';
-      document.getElementById('img-upload-placeholder').style.display = 'none';
-    } catch(e) {
-      showModalMsg('Image upload failed. Please try again.', 'error');
+  async function handleImageUpload(input) {
+    const remaining = 4 - uploadedImageUrls.length;
+    if (remaining <= 0) { showModalMsg('Maximum 4 images allowed.', 'error'); return; }
+    const files = Array.from(input.files).slice(0, remaining);
+    if (!files.length) return;
+
+    const btn = document.getElementById('save-product-btn');
+    btn.disabled = true;
+    document.getElementById('uploading-indicator').style.display = 'block';
+
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('folder', 'harkiagh/products');
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:formData });
+        const data = await res.json();
+        if (data.secure_url) uploadedImageUrls.push(data.secure_url);
+      } catch(e) {
+        showModalMsg('One image failed to upload. Try again.', 'error');
+      }
     }
-    document.getElementById('img-upload-progress').style.display = 'none';
+
+    document.getElementById('uploading-indicator').style.display = 'none';
+    btn.disabled = false;
+    renderImagePreviews();
+    input.value = '';
+  }
+
+  function renderImagePreviews() {
+    document.getElementById('img-previews').innerHTML = uploadedImageUrls.map((url, i) => `
+      <div class="img-preview-item">
+        <img src="${url}" />
+        <button class="remove-img" onclick="removeImage(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function removeImage(index) {
+    uploadedImageUrls.splice(index, 1);
+    renderImagePreviews();
   }
 
   async function saveProduct() {
     const name = document.getElementById('prod-name').value.trim();
     const price = parseFloat(document.getElementById('prod-price').value);
-    const desc = document.getElementById('prod-desc').value.trim();
     const stock = document.getElementById('prod-stock').value;
+    const desc = document.getElementById('prod-desc').value.trim();
     const category = document.getElementById('prod-category').value.trim();
 
     if (!name) { showModalMsg('Product name is required.', 'error'); return; }
     if (!price || price <= 0) { showModalMsg('Please enter a valid price.', 'error'); return; }
+    if (stock === '') { showModalMsg('Please enter a stock quantity.', 'error'); return; }
 
     const btn = document.getElementById('save-product-btn');
     btn.disabled = true; btn.textContent = 'Saving...';
 
     const payload = {
-      store_id: storeId, name, description: desc, price,
-      stock: stock !== '' ? parseInt(stock) : null,
-      category: category || null, image_url: currentImageUrl, is_active: true
+      store_id: storeId, name,
+      description: desc || null,
+      price,
+      stock: parseInt(stock),
+      category: category || null,
+      image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
+      image_url: uploadedImageUrls.length > 0 ? uploadedImageUrls[0] : null,
+      is_active: true,
+      is_approved: false
     };
 
     let error;
@@ -369,12 +435,13 @@
     }
 
     if (error) {
-      showModalMsg('Error saving product: ' + error.message, 'error');
+      showModalMsg('Error: ' + error.message, 'error');
+      btn.disabled = false;
+      btn.textContent = editingProductId ? 'Update Product' : 'Save Product';
     } else {
       closeModal();
       await loadProducts();
     }
-    btn.disabled = false; btn.textContent = 'Save Product';
   }
 
   async function deleteProduct(productId) {
@@ -385,8 +452,7 @@
 
   function showModalMsg(text, type) {
     const el = document.getElementById('modal-msg');
-    el.textContent = text;
-    el.className = 'msg ' + type;
+    el.textContent = text; el.className = 'msg ' + type;
   }
 
   async function logout() {

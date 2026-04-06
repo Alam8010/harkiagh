@@ -55,6 +55,10 @@
     .product-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
     .product-card:hover .product-img img { transform:scale(1.05); }
     .product-img-placeholder { height:200px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; background:var(--dark3); }
+
+    .img-dots { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); display:flex; gap:5px; }
+    .img-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.4); cursor:pointer; transition:background 0.15s; }
+    .img-dot.active { background:var(--white); }
     .product-img-placeholder svg { width:40px; height:40px; fill:rgba(255,255,255,0.08); }
     .out-of-stock-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; }
     .out-of-stock-label { background:rgba(255,59,59,0.9); color:var(--white); font-size:12px; font-weight:700; padding:6px 14px; border-radius:100px; letter-spacing:1px; text-transform:uppercase; }
@@ -253,6 +257,16 @@
   let cart = [];
   let activeCategory = 'All';
 
+  function switchImg(productId, index, e) {
+    e.stopPropagation();
+    const container = document.getElementById('pimg-' + productId);
+    if (!container) return;
+    const img = container.querySelector('img');
+    const imgs = JSON.parse(decodeURIComponent(img.dataset.imgs));
+    img.src = imgs[index];
+    container.querySelectorAll('.img-dot').forEach((d,i) => d.classList.toggle('active', i === index));
+  }
+
   async function init() {
     const params = new URLSearchParams(window.location.search);
     const slug = params.get('slug');
@@ -317,10 +331,14 @@
       const outOfStock = p.stock !== null && p.stock !== undefined && p.stock <= 0;
       return `
         <div class="product-card">
-          ${p.image_url
-            ? `<div class="product-img">${outOfStock ? '<div class="out-of-stock-overlay"><div class="out-of-stock-label">Out of Stock</div></div>' : ''}<img src="${p.image_url}" alt="${p.name}" /></div>`
-            : `<div class="product-img-placeholder"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>`
-          }
+          ${(function(){
+            const imgs = p.image_urls || (p.image_url ? [p.image_url] : []);
+            if(imgs.length > 0){
+              const dots = imgs.length > 1 ? '<div class=\"img-dots\">' + imgs.map((u,i)=>'<div class=\"img-dot '+(i===0?'active':'')+'\" onclick=\"switchImg(\\''+p.id+'\\','+i+',event)\"></div>').join('')+'</div>' : '';
+              return '<div class=\"product-img\" id=\"pimg-'+p.id+'\">'+(outOfStock?'<div class=\"out-of-stock-overlay\"><div class=\"out-of-stock-label\">Out of Stock</div></div>':'')+'<img src=\"'+imgs[0]+'\" alt=\"'+p.name+'\" data-imgs=\"'+encodeURIComponent(JSON.stringify(imgs))+'\" />'+dots+'</div>';
+            }
+            return '<div class=\"product-img-placeholder\"><svg viewBox=\"0 0 24 24\"><path d=\"M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z\"/></svg></div>';
+          })()}
           <div class="product-info">
             ${p.category ? `<div class="product-cat">${p.category}</div>` : ''}
             <div class="product-name">${p.name}</div>
@@ -387,7 +405,7 @@
     }
     itemsEl.innerHTML = cart.map(item => `
       <div class="cart-item">
-        ${item.image_url ? `<img class="cart-item-img" src="${item.image_url}" alt="${item.name}" />` : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:rgba(255,255,255,0.1)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg></div>`}
+        ${(item.image_urls&&item.image_urls[0])||item.image_url ? `<img class="cart-item-img" src="${(item.image_urls&&item.image_urls[0])||item.image_url}" alt="${item.name}" />` : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:rgba(255,255,255,0.1)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg></div>`}
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
           <div class="cart-item-price">PKR ${Number(item.price).toLocaleString()}</div>
