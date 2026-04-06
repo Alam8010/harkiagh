@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Store Settings — Harkiagh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --green:#00E676;--green-dark:#00C853;--dark:#0A0A0A;--dark2:#111111;--dark3:#1A1A1A;--border:rgba(255,255,255,0.07);--gray:#888888;--white:#FFFFFF;--danger:#FF3B3B; }
+    html, body { min-height:100%; background:var(--dark); color:var(--white); font-family:'Barlow',sans-serif; }
+    .mobile-bar { display:none; position:fixed; top:0; left:0; right:0; height:56px; background:var(--dark2); border-bottom:1px solid var(--border); padding:0 16px; align-items:center; justify-content:space-between; z-index:200; }
+    .mobile-logo { display:flex; align-items:center; gap:8px; }
+    .mobile-logo-icon { width:28px; height:28px; background:var(--green); border-radius:6px; display:flex; align-items:center; justify-content:center; }
+    .mobile-logo-icon svg { width:16px; height:16px; fill:var(--dark); }
+    .mobile-logo-text { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; }
+    .mobile-logo-text span { color:var(--green); }
+    .mobile-menu-btn { background:transparent; border:1px solid var(--border); color:var(--white); border-radius:8px; padding:6px 12px; font-size:18px; cursor:pointer; }
+    .mobile-menu { display:none; position:fixed; top:56px; left:0; right:0; background:var(--dark2); border-bottom:1px solid var(--border); flex-direction:column; z-index:199; padding:8px 0; }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu a, .mobile-menu button { padding:14px 20px; color:rgba(255,255,255,0.7); text-decoration:none; font-size:15px; font-weight:500; border:none; background:transparent; text-align:left; cursor:pointer; font-family:'Barlow',sans-serif; border-bottom:1px solid rgba(255,255,255,0.04); }
+    .mobile-menu button { color:var(--danger); }
+    @media (max-width:900px) { .mobile-bar{display:flex;} .sidebar{display:none;} .main{margin-left:0;margin-top:56px;} }
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:220px; background:var(--dark2); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; }
+    .sidebar-logo { padding:24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-icon { width:32px; height:32px; background:var(--green); border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-icon svg { width:18px; height:18px; fill:var(--dark); }
+    .logo-text { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; }
+    .logo-text span { color:var(--green); }
+    .nav-section { padding:20px 12px; flex:1; }
+    .nav-label { font-size:10px; font-weight:600; color:rgba(255,255,255,0.25); letter-spacing:2px; text-transform:uppercase; padding:0 8px; margin-bottom:8px; margin-top:16px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; color:rgba(255,255,255,0.5); font-size:14px; font-weight:500; cursor:pointer; transition:all 0.15s; text-decoration:none; margin-bottom:2px; }
+    .nav-item:hover { background:rgba(255,255,255,0.05); color:var(--white); }
+    .nav-item.active { background:rgba(0,230,118,0.1); color:var(--green); }
+    .nav-item svg { width:16px; height:16px; fill:currentColor; flex-shrink:0; }
+    .sidebar-bottom { padding:16px 12px; border-top:1px solid var(--border); }
+    .user-info { display:flex; align-items:center; gap:10px; padding:10px 12px; margin-bottom:8px; }
+    .user-avatar { width:32px; height:32px; background:rgba(0,230,118,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--green); flex-shrink:0; }
+    .user-name { font-size:13px; font-weight:500; color:var(--white); }
+    .user-role { font-size:11px; color:var(--gray); }
+    .logout-btn { width:100%; padding:9px 12px; background:transparent; border:1px solid rgba(255,59,59,0.2); border-radius:8px; color:rgba(255,59,59,0.7); font-family:'Barlow',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .logout-btn:hover { background:rgba(255,59,59,0.08); color:var(--danger); }
+    .main { margin-left:220px; min-height:100vh; }
+    .topbar { height:64px; background:var(--dark2); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:50; }
+    .page-title { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+    .page-sub { font-size:12px; color:var(--gray); }
+    .page-body { padding:28px 32px; max-width:700px; }
+    @media (max-width:900px) { .page-body{padding:16px;} .topbar{padding:0 16px;} }
+
+    .form-card { background:var(--dark2); border:1px solid var(--border); border-radius:14px; padding:28px; margin-bottom:24px; }
+    .form-card-title { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .form-card-title svg { width:16px; height:16px; fill:var(--green); }
+
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:11px; font-weight:600; color:rgba(255,255,255,0.4); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
+    .field input, .field textarea, .field select { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; font-family:'Barlow',sans-serif; font-size:14px; color:var(--white); outline:none; transition:border-color 0.2s; }
+    .field textarea { resize:vertical; min-height:80px; }
+    .field select { cursor:pointer; }
+    .field select option { background:var(--dark2); }
+    .field input::placeholder, .field textarea::placeholder { color:rgba(255,255,255,0.2); }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color:rgba(0,230,118,0.4); background:rgba(0,230,118,0.04); }
+    .field-hint { font-size:12px; color:var(--gray); margin-top:6px; }
+
+    .logo-upload-area { border:2px dashed rgba(255,255,255,0.1); border-radius:12px; padding:32px; text-align:center; cursor:pointer; transition:border-color 0.15s; position:relative; }
+    .logo-upload-area:hover { border-color:rgba(0,230,118,0.3); }
+    .logo-preview { width:80px; height:80px; border-radius:12px; object-fit:cover; margin:0 auto 12px; display:block; }
+    .logo-placeholder-icon { width:48px; height:48px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+    .logo-placeholder-icon svg { width:24px; height:24px; fill:rgba(255,255,255,0.2); }
+    .logo-upload-text { font-size:14px; font-weight:500; margin-bottom:4px; }
+    .logo-upload-sub { font-size:12px; color:var(--gray); }
+    #logo-file-input { display:none; }
+    .upload-progress { margin-top:12px; font-size:12px; color:var(--green); display:none; }
+
+    .save-btn { padding:12px 28px; background:var(--green); color:var(--dark); border:none; border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background 0.15s; }
+    .save-btn:hover { background:var(--green-dark); }
+    .save-btn:disabled { opacity:0.6; cursor:not-allowed; }
+
+    .msg { padding:10px 14px; border-radius:8px; font-size:13px; font-weight:500; margin-bottom:16px; display:none; }
+    .msg.error { background:rgba(255,59,59,0.1); border:1px solid rgba(255,59,59,0.2); color:var(--danger); display:block; }
+    .msg.success { background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2); color:var(--green); display:block; }
+
+    .store-url-box { background:rgba(0,230,118,0.05); border:1px solid rgba(0,230,118,0.15); border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .store-url-text { font-size:13px; color:var(--green); font-family:monospace; word-break:break-all; }
+    .copy-btn { padding:6px 14px; background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2); border-radius:6px; color:var(--green); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background 0.15s; }
+    .copy-btn:hover { background:rgba(0,230,118,0.2); }
+
+    #loading { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:999; }
+    .spinner { width:32px; height:32px; border:2px solid rgba(255,255,255,0.1); border-top-color:var(--green); border-radius:50%; animation:spin 0.7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+  </style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div></div>
+
+<div class="mobile-bar">
+  <div class="mobile-logo">
+    <div class="mobile-logo-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div>
+    <span class="mobile-logo-text">HARKI<span>AGH</span></span>
+  </div>
+  <button class="mobile-menu-btn" onclick="document.getElementById('mobile-menu').classList.toggle('open')">☰</button>
+</div>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="dashboard.html">Dashboard</a>
+  <a href="products.html">Products</a>
+  <a href="orders.html">Orders</a>
+  <a href="store-setup.html">Store Settings</a>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="sidebar">
+  <a class="sidebar-logo" href="../index.html">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg></div>
+    <span class="logo-text">HARKI<span>AGH</span></span>
+  </a>
+  <div class="nav-section">
+    <div class="nav-label">Store</div>
+    <a class="nav-item" href="dashboard.html"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>Dashboard</a>
+    <a class="nav-item" href="products.html"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>Products</a>
+    <a class="nav-item" href="orders.html"><svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>Orders</a>
+    <div class="nav-label">Settings</div>
+    <a class="nav-item active" href="store-setup.html"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Store Settings</a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div><div class="user-name" id="user-name">Loading...</div><div class="user-role">Store Owner</div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Store Settings</div>
+      <div class="page-sub">Manage your store profile</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="msg" id="main-msg"></div>
+
+    <div id="store-url-section" style="display:none" class="form-card">
+      <div class="form-card-title"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>Your Store Link</div>
+      <div class="store-url-box">
+        <div class="store-url-text" id="store-url-text"></div>
+        <button class="copy-btn" onclick="copyStoreUrl()">Copy</button>
+      </div>
+      <div style="font-size:12px;color:var(--gray)">Share this link with your customers so they can browse and order from your store.</div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-title"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2z"/></svg>Store Information</div>
+      <input type="file" id="logo-file-input" accept="image/*" onchange="uploadLogo(this)" />
+      <div class="field">
+        <label>Store Logo</label>
+        <div class="logo-upload-area" onclick="document.getElementById('logo-file-input').click()">
+          <div id="logo-placeholder">
+            <div class="logo-placeholder-icon"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+            <div class="logo-upload-text">Click to upload logo</div>
+            <div class="logo-upload-sub">Recommended: 200×200px, PNG or JPG</div>
+          </div>
+          <img id="logo-preview" class="logo-preview" style="display:none" />
+          <div class="upload-progress" id="upload-progress">Uploading...</div>
+        </div>
+      </div>
+      <div class="field"><label>Store Name *</label><input type="text" id="store-name" placeholder="e.g. Ahmed's Clothing Store" /></div>
+      <div class="field">
+        <label>Store URL Slug *</label>
+        <input type="text" id="store-slug" placeholder="e.g. ahmeds-clothing" oninput="sanitizeSlug()" />
+        <div class="field-hint">Only lowercase letters, numbers and hyphens. This becomes your store URL.</div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="store-desc" placeholder="Tell customers what you sell..."></textarea></div>
+      <div class="field">
+        <label>Category</label>
+        <select id="store-category">
+          <option value="">Select a category</option>
+          <option>Clothing & Fashion</option>
+          <option>Electronics</option>
+          <option>Sports & Fitness</option>
+          <option>Food & Beverages</option>
+          <option>Home & Decor</option>
+          <option>Books & Stationery</option>
+          <option>Beauty & Health</option>
+          <option>Toys & Games</option>
+          <option>Handmade & Crafts</option>
+          <option>Automotive</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>City</label><input type="text" id="store-city" placeholder="e.g. Karachi" /></div>
+      <div class="field"><label>WhatsApp Number (optional)</label><input type="text" id="store-whatsapp" placeholder="03XX-XXXXXXX" /></div>
+      <button class="save-btn" id="save-btn" onclick="saveStore()">Save Store</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/supabase.js"></script>
+<script>
+  let userId = null;
+  let existingStoreId = null;
+  let logoUrl = null;
+
+  async function init() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = '../index.html'; return; }
+    userId = session.user.id;
+    const name = session.user.user_metadata?.full_name || session.user.email;
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+
+    const { data: store } = await _supabase.from('stores').select('*').eq('owner_id', userId).single();
+    if (store) {
+      existingStoreId = store.id;
+      document.getElementById('store-name').value = store.name || '';
+      document.getElementById('store-slug').value = store.slug || '';
+      document.getElementById('store-desc').value = store.description || '';
+      document.getElementById('store-category').value = store.category || '';
+      document.getElementById('store-city').value = store.city || '';
+      document.getElementById('store-whatsapp').value = store.whatsapp || '';
+      logoUrl = store.logo_url;
+      if (store.logo_url) {
+        document.getElementById('logo-placeholder').style.display = 'none';
+        const img = document.getElementById('logo-preview');
+        img.src = store.logo_url;
+        img.style.display = 'block';
+      }
+      const storeUrlSection = document.getElementById('store-url-section');
+      storeUrlSection.style.display = 'block';
+      const storeUrl = `${window.location.origin}${window.location.pathname.replace('store-setup.html', '')}store-public.html?slug=${store.slug}`;
+      document.getElementById('store-url-text').textContent = storeUrl;
+    }
+    document.getElementById('loading').style.display = 'none';
+  }
+
+  function sanitizeSlug() {
+    const el = document.getElementById('store-slug');
+    el.value = el.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-');
+  }
+
+  async function uploadLogo(input) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById('upload-progress').style.display = 'block';
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'harkiagh/logos');
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:formData });
+      const data = await res.json();
+      logoUrl = data.secure_url;
+      document.getElementById('logo-placeholder').style.display = 'none';
+      const img = document.getElementById('logo-preview');
+      img.src = logoUrl;
+      img.style.display = 'block';
+    } catch(e) {
+      alert('Logo upload failed. Please try again.');
+    }
+    document.getElementById('upload-progress').style.display = 'none';
+  }
+
+  async function saveStore() {
+    const name = document.getElementById('store-name').value.trim();
+    const slug = document.getElementById('store-slug').value.trim();
+    const desc = document.getElementById('store-desc').value.trim();
+    const category = document.getElementById('store-category').value;
+    const city = document.getElementById('store-city').value.trim();
+    const whatsapp = document.getElementById('store-whatsapp').value.trim();
+
+    if (!name || !slug) { showMsg('Store name and URL slug are required.', 'error'); return; }
+    if (!/^[a-z0-9-]+$/.test(slug)) { showMsg('Slug can only contain lowercase letters, numbers and hyphens.', 'error'); return; }
+
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const payload = { name, slug, description: desc, category, city, whatsapp, logo_url: logoUrl, is_active: true, owner_id: userId };
+
+    let error;
+    if (existingStoreId) {
+      ({ error } = await _supabase.from('stores').update(payload).eq('id', existingStoreId));
+    } else {
+      const { data, error: insertError } = await _supabase.from('stores').insert(payload).select().single();
+      error = insertError;
+      if (data) existingStoreId = data.id;
+    }
+
+    if (error) {
+      if (error.message.includes('duplicate') || error.message.includes('unique')) {
+        showMsg('That store URL slug is already taken. Please choose another.', 'error');
+      } else {
+        showMsg('Error saving store: ' + error.message, 'error');
+      }
+    } else {
+      showMsg('Store saved successfully!', 'success');
+      const storeUrlSection = document.getElementById('store-url-section');
+      storeUrlSection.style.display = 'block';
+      const storeUrl = `${window.location.origin}${window.location.pathname.replace('store-setup.html', '')}store-public.html?slug=${slug}`;
+      document.getElementById('store-url-text').textContent = storeUrl;
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Save Store';
+  }
+
+  function copyStoreUrl() {
+    const url = document.getElementById('store-url-text').textContent;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('main-msg');
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  async function logout() {
+    await _supabase.auth.signOut();
+    window.location.href = '../index.html';
+  }
+
+  init();
+</script>
+</body>
+</html>
