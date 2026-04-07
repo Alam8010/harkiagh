@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Activate Your Store — Harkiagh</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00E676;
+      --green-dark: #00C853;
+      --dark: #0A0A0A;
+      --dark2: #111111;
+      --dark3: #1A1A1A;
+      --border: rgba(255,255,255,0.07);
+      --gray: #888888;
+      --white: #FFFFFF;
+      --danger: #FF3B3B;
+      --warning: #FFB300;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--dark);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      background: var(--dark2);
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 32px; height: 32px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: var(--dark); }
+    .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--white); }
+    .logo-text span { color: var(--green); }
+
+    /* MAIN */
+    .main {
+      max-width: 560px;
+      margin: 48px auto;
+      padding: 0 20px;
+    }
+
+    /* STEPS */
+    .steps {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 36px;
+    }
+
+    .step {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .step-circle {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step.done .step-circle { background: var(--green); color: var(--dark); }
+    .step.active .step-circle { background: var(--green); color: var(--dark); }
+    .step.inactive .step-circle { background: rgba(255,255,255,0.08); color: var(--gray); }
+
+    .step-label { font-size: 13px; font-weight: 500; }
+    .step.done .step-label { color: var(--green); }
+    .step.active .step-label { color: var(--white); }
+    .step.inactive .step-label { color: var(--gray); }
+
+    .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+    .step-line.done { background: var(--green); }
+
+    /* CARD */
+    .card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .card-sub { font-size: 13px; color: var(--gray); }
+
+    .card-body { padding: 24px; }
+
+    /* BANK DETAILS BOX */
+    .bank-box {
+      background: rgba(0,230,118,0.05);
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .bank-box-title {
+      font-size: 11px; font-weight: 700;
+      color: var(--green); letter-spacing: 2px;
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    .bank-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .bank-row:last-child { margin-bottom: 0; }
+
+    .bank-label { font-size: 12px; color: var(--gray); }
+
+    .bank-value {
+      font-size: 14px; font-weight: 600; color: var(--white);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--gray);
+      font-size: 11px;
+      padding: 3px 8px;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { color: var(--white); background: rgba(255,255,255,0.1); }
+
+    .amount-highlight {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px; color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    /* FORM */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.4); letter-spacing: 1.5px;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+
+    .field input {
+      width: 100%; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 12px 16px;
+      font-family: 'Barlow', sans-serif; font-size: 14px;
+      color: var(--white); outline: none; transition: border-color 0.2s;
+    }
+
+    .field input::placeholder { color: rgba(255,255,255,0.2); }
+    .field input:focus { border-color: rgba(0,230,118,0.4); background: rgba(0,230,118,0.04); }
+
+    /* FILE UPLOAD */
+    .upload-area {
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .upload-area:hover { border-color: rgba(0,230,118,0.3); background: rgba(0,230,118,0.03); }
+    .upload-area.has-file { border-color: rgba(0,230,118,0.4); background: rgba(0,230,118,0.05); }
+
+    .upload-area input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+
+    .upload-icon { width: 40px; height: 40px; background: rgba(0,230,118,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+    .upload-icon svg { width: 20px; height: 20px; fill: var(--green); }
+    .upload-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .upload-sub { font-size: 12px; color: var(--gray); }
+    .upload-filename { font-size: 13px; color: var(--green); margin-top: 8px; font-weight: 500; }
+
+    /* SUBMIT BTN */
+    .submit-btn {
+      width: 100%; padding: 14px;
+      background: var(--green); color: var(--dark);
+      border: none; border-radius: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: background 0.15s;
+      margin-top: 8px;
+    }
+
+    .submit-btn:hover { background: var(--green-dark); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* MSG */
+    .msg { padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 16px; display: none; }
+    .msg.error { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.2); color: var(--danger); display: block; }
+    .msg.success { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.2); color: var(--green); display: block; }
+
+    /* PENDING STATE */
+    #pending-screen {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .pending-icon {
+      width: 72px; height: 72px;
+      background: rgba(255,179,0,0.1);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .pending-icon svg { width: 36px; height: 36px; fill: var(--warning); }
+    .pending-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; margin-bottom: 10px; }
+    .pending-sub { font-size: 14px; color: var(--gray); line-height: 1.7; max-width: 360px; margin: 0 auto 24px; }
+
+    .pending-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,179,0,0.1); border: 1px solid rgba(255,179,0,0.2);
+      border-radius: 100px; padding: 8px 20px;
+      font-size: 13px; font-weight: 600; color: var(--warning);
+    }
+
+    .logout-link {
+      display: block; margin-top: 24px;
+      font-size: 13px; color: var(--gray);
+      cursor: pointer; text-decoration: underline;
+    }
+
+    .logout-link:hover { color: var(--white); }
+
+    #loading-screen {
+      text-align: center; padding: 60px 24px;
+    }
+
+    .spinner { width: 32px; height: 32px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="logo" href="../index.html">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
+    <span class="logo-text">HARKIAGH</span>
+  </a>
+</nav>
+
+<div class="main">
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step done">
+      <div class="step-circle">✓</div>
+      <div class="step-label">Create Account</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active">
+      <div class="step-circle">2</div>
+      <div class="step-label">Activate Store</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step inactive">
+      <div class="step-circle">3</div>
+      <div class="step-label">Setup Store</div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- LOADING -->
+    <div id="loading-screen">
+      <div class="spinner"></div>
+      <div style="font-size:13px;color:var(--gray)">Checking payment status...</div>
+    </div>
+
+    <!-- PAYMENT FORM -->
+    <div id="payment-form-screen" style="display:none">
+      <div class="card-header">
+        <div class="card-title">Activate Your Store</div>
+        <div class="card-sub">Send the subscription fee to activate your store on Harkiagh</div>
+      </div>
+      <div class="card-body">
+
+        <!-- BANK DETAILS -->
+       <div class="bank-box">
+  <div class="bank-box-title">Meezan Bank</div>
+  <div class="bank-row">
+    <div class="bank-label">Bank</div>
+    <div class="bank-value">Meezan Bank</div>
+  </div>
+  <div class="bank-row">
+    <div class="bank-label">Account Title</div>
+    <div class="bank-value">Akash Alam</div>
+  </div>
+  <div class="bank-row">
+    <div class="bank-label">Account Number</div>
+    <div class="bank-value">
+      00300114582074
+      <button class="copy-btn" onclick="copyText('00300114582074', this)">Copy</button>
+    </div>
+  </div>
+  <div class="bank-row">
+    <div class="bank-label">Amount</div>
+    <div class="bank-value"><span class="amount-highlight">PKR 1,000</span></div>
+  </div>
+</div>
+
+<div class="bank-box" style="margin-top:16px;border-color:rgba(41,121,255,0.15);background:rgba(41,121,255,0.05)">
+  <div class="bank-box-title" style="color:#2979FF">NayaPay</div>
+  <div class="bank-row">
+    <div class="bank-label">Account Title</div>
+    <div class="bank-value">Akash Alam</div>
+  </div>
+  <div class="bank-row">
+    <div class="bank-label">NayaPay Number</div>
+    <div class="bank-value">
+      +923198810859
+      <button class="copy-btn" onclick="copyText('+923198810859', this)">Copy</button>
+    </div>
+  </div>
+  <div class="bank-row">
+    <div class="bank-label">Amount</div>
+    <div class="bank-value"><span class="amount-highlight">PKR 1,000</span></div>
+  </div>
+</div>
+
+        <div class="msg" id="form-msg"></div>
+
+        <div class="field">
+          <label>Transaction ID (TRX ID)</label>
+          <input type="text" id="trx-id" placeholder="Enter your transaction ID" />
+        </div>
+
+        <div class="field">
+          <label>Payment Screenshot</label>
+          <div class="upload-area" id="upload-area">
+            <input type="file" id="screenshot-file" accept="image/*" onchange="handleFileSelect(this)" />
+            <div class="upload-icon">
+              <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 14H6l3-4 2 3 3-4 4 5zM8 9c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"/></svg>
+            </div>
+            <div class="upload-text" id="upload-text">Click to upload screenshot</div>
+            <div class="upload-sub">JPG, PNG supported</div>
+            <div class="upload-filename" id="upload-filename"></div>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitPayment()">Submit Payment Proof</button>
+
+      </div>
+    </div>
+
+    <!-- PENDING APPROVAL SCREEN -->
+    <div id="pending-screen">
+      <div class="pending-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="pending-title">Payment Under Review</div>
+      <div class="pending-sub">Your payment proof has been submitted. Our team will verify and activate your store within 24 hours.</div>
+      <div class="pending-badge">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        Pending Admin Approval
+      </div>
+      <span class="logout-link" onclick="handleLogout()">Sign out and come back later</span>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const _supabase = createClient(
+    'https://vlpozudvefnkkhvtjswi.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZscG96dWR2ZWZua2todnRqc3dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NzgxNDAsImV4cCI6MjA5MDI1NDE0MH0.0hRczlsHkDWcsJXGFA-HHRTZcYxsgy_ARhx6EAlN8T8'
+  );
+
+  let currentUser = null;
+  let selectedFile = null;
+
+  async function init() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = '../index.html'; return; }
+    currentUser = session.user;
+
+    // Check if already submitted or approved
+    const { data: payment } = await _supabase
+      .from('subscription_payments')
+      .select('status')
+      .eq('user_id', currentUser.id)
+      .single();
+
+    document.getElementById('loading-screen').style.display = 'none';
+
+    if (payment && payment.status === 'approved') {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    if (payment && payment.status === 'pending') {
+      document.getElementById('pending-screen').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('payment-form-screen').style.display = 'block';
+  }
+
+  function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+      selectedFile = input.files[0];
+      document.getElementById('upload-filename').textContent = selectedFile.name;
+      document.getElementById('upload-text').textContent = 'Screenshot selected';
+      document.getElementById('upload-area').classList.add('has-file');
+    }
+  }
+
+  async function submitPayment() {
+    const trxId = document.getElementById('trx-id').value.trim();
+    if (!trxId) { showMsg('Please enter your Transaction ID.', 'error'); return; }
+    if (!selectedFile) { showMsg('Please upload your payment screenshot.', 'error'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+
+    // Upload screenshot to Supabase storage
+    const fileExt = selectedFile.name.split('.').pop();
+    const fileName = currentUser.id + '_' + Date.now() + '.' + fileExt;
+
+    const { data: uploadData, error: uploadError } = await _supabase.storage
+      .from('payment-screenshots')
+      .upload(fileName, selectedFile);
+
+    if (uploadError) {
+      showMsg('Screenshot upload failed: ' + uploadError.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    const { data: urlData } = _supabase.storage
+      .from('payment-screenshots')
+      .getPublicUrl(fileName);
+
+    const screenshotUrl = urlData.publicUrl;
+
+    // Insert payment record
+    const { error: insertError } = await _supabase
+      .from('subscription_payments')
+      .insert({
+        user_id: currentUser.id,
+        full_name: currentUser.user_metadata?.full_name || '',
+        email: currentUser.email,
+        amount: 1000,
+        trx_id: trxId,
+        screenshot_url: screenshotUrl,
+        status: 'pending'
+      });
+
+    if (insertError) {
+      showMsg('Submission failed: ' + insertError.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    // Show pending screen
+    document.getElementById('payment-form-screen').style.display = 'none';
+    document.getElementById('pending-screen').style.display = 'block';
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('form-msg');
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+
+  async function handleLogout() {
+    await _supabase.auth.signOut();
+    window.location.href = '../index.html';
+  }
+
+  init();
+</script>
+</body>
+</html>
