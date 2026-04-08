@@ -426,7 +426,7 @@
 
   async function init() {
     const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) { window.location.href = '/Harkiagh/index.html'; return; }
+    if (!session) { window.location.href = '/harkiagh/index.html'; return; }
 
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.email;
@@ -616,7 +616,7 @@
 
   async function handleLogout() {
     await _supabase.auth.signOut();
-    window.location.href = '/Harkiagh/index.html';
+    window.location.href = '/harkiagh/index.html';
   }
 
   init();

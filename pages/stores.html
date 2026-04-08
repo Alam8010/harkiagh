@@ -287,7 +287,7 @@
     const email = document.getElementById('auth-email').value.trim();
     if (!email) { showAuthMsg('Please enter your email first.', 'error'); return; }
     const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://Alam08-S.github.io/Harkiagh/pages/reset-password.html'
+      redirectTo: 'https://Alam08-S.github.io/harkiagh/pages/reset-password.html'
     });
     if (error) { showAuthMsg(error.message, 'error'); return; }
     showAuthMsg('Password reset email sent! Check your inbox.', 'success');
