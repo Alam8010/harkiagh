@@ -638,7 +638,7 @@
   );
 
   const CLOUDINARY_CLOUD = 'dzpxkndcz';
-  const CLOUDINARY_PRESET = 'Harkiagh_logos';
+  const CLOUDINARY_PRESET = 'ml_default';
 
   let currentUser = null;
   let existingStore = null;
@@ -715,6 +715,8 @@
     btn.disabled = true;
     btn.textContent = 'Saving...';
 
+    const whatsapp = document.getElementById('store-whatsapp').value.trim();
+
     const storeData = {
       owner_id: currentUser.id,
       name,
@@ -723,6 +725,7 @@
       phone: phone || null,
       location: location || null,
       logo_url: logoUrl || null,
+      whatsapp_number: whatsapp || null,
     };
 
     let error;
@@ -782,6 +785,7 @@
       document.getElementById('store-desc').value = store.description || '';
       document.getElementById('store-phone').value = store.phone || '';
       document.getElementById('store-location').value = store.location || '';
+      document.getElementById('store-whatsapp').value = store.whatsapp_number || '';
       updateSlugPreview(store.slug || '');
 
       if (store.logo_url) {

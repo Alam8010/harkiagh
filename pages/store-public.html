@@ -251,17 +251,7 @@
     .loading-text { font-size: 13px; color: var(--gray); }
 
     /* CHAT BUBBLE */
-    .chat-bubble-btn {
-      position: fixed; bottom: 28px; right: 28px;
-      width: 52px; height: 52px;
-      background: var(--green); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; box-shadow: 0 4px 20px rgba(0,230,118,0.3);
-      transition: transform 0.15s;
-      z-index: 150;
-    }
-    .chat-bubble-btn:hover { transform: scale(1.08); }
-    .chat-bubble-btn svg { width: 24px; height: 24px; fill: var(--dark); }
+    /* chat bubble removed */
 
     @media (max-width: 768px) {
       .navbar { padding: 0 16px; }
@@ -356,10 +346,6 @@
   </div>
 </div>
 
-<!-- Chat Bubble -->
-<div class="chat-bubble-btn" onclick="openChatModal()" title="Chat with store">
-  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-</div>
 
 <!-- AUTH MODAL -->
 <div class="modal-overlay" id="auth-modal">
@@ -441,21 +427,6 @@
 </div>
 
 <!-- CHAT MODAL -->
-<div class="modal-overlay" id="chat-modal">
-  <div class="modal" style="max-width:440px">
-    <div class="modal-header">
-      <div class="modal-title">Chat with Store</div>
-      <div class="modal-close" onclick="closeModal('chat-modal')">×</div>
-    </div>
-    <div class="modal-body" style="padding:0">
-      <div id="chat-messages" style="height:320px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-    <div style="padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
-      <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--white);outline:none" onkeydown="if(event.key==='Enter')sendChatMessage()" />
-      <button onclick="sendChatMessage()" style="padding:10px 16px;background:var(--green);color:var(--dark);border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;cursor:pointer">Send</button>
-    </div>
-  </div>
-</div>
 
 <script>
     const { createClient } = supabase;
@@ -481,9 +452,7 @@
   let currentCustomer = null;
   let selectedCategory = '';
   let selectedProduct = null;
-  let currentChatId = null;
   let authMode = 'login';
-  let chatChannel = null;
 
   // ── INIT ──
   async function init() {
@@ -597,7 +566,7 @@
                 <div class="product-stock-label">${p.stock_qty > 0 ? p.stock_qty + ' in stock' : 'Out of stock'}</div>
               </div>
               ${p.stock_qty > 0 ? `
-                <button class="add-to-cart-btn ${inCart ? 'added' : ''}" onclick="event.stopPropagation(); addToCart('${p.id}')">
+                <button class="add-to-cart-btn ${inCart ? 'added' : ''}" onclick="event.stopPropagation(); openProductModal('${p.id}')">
                   <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                   ${inCart ? 'Added' : 'Add'}
                 </button>` : ''}
@@ -608,28 +577,29 @@
   }
 
   // ── CART ──
-  function addToCart(productId) {
+  function addToCart(productId, size) {
     const product = allProducts.find(p => p.id === productId);
     if (!product || product.stock_qty === 0) return;
 
-    const existing = cart.find(c => c.id === productId);
+    const cartKey = productId + (size ? '_' + size : '');
+    const existing = cart.find(c => c.cartKey === cartKey);
     if (existing) {
       existing.qty = Math.min(existing.qty + 1, product.stock_qty);
     } else {
-      cart.push({ ...product, qty: 1 });
+      cart.push({ ...product, qty: 1, cartKey, selectedSize: size || null });
     }
     updateCartUI();
     filterProducts();
   }
 
-  function removeFromCart(productId) {
-    cart = cart.filter(c => c.id !== productId);
+  function removeFromCart(cartKey) {
+    cart = cart.filter(c => c.cartKey !== cartKey);
     updateCartUI();
     filterProducts();
   }
 
-  function updateQty(productId, delta) {
-    const item = cart.find(c => c.id === productId);
+  function updateQty(cartKey, delta) {
+    const item = cart.find(c => c.cartKey === cartKey);
     if (!item) return;
     item.qty = Math.max(1, item.qty + delta);
     updateCartUI();
@@ -656,13 +626,13 @@
       <div class="cart-item">
         ${item.image_urls?.[0] ? `<img class="cart-item-img" src="${item.image_urls[0]}" />` : `<div class="cart-item-img" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="24" height="24" fill="rgba(255,255,255,0.1)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg></div>`}
         <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-name">${item.name}${item.selectedSize ? ' <span style="font-size:11px;color:var(--green);font-weight:600">['+item.selectedSize+']</span>' : ''}</div>
           <div class="cart-item-price">PKR ${Number(item.price).toLocaleString('en-PK')}</div>
           <div class="cart-item-qty">
-            <div class="qty-btn" onclick="updateQty('${item.id}', -1)">−</div>
+            <div class="qty-btn" onclick="updateQty('${item.cartKey}', -1)">−</div>
             <div class="qty-num">${item.qty}</div>
-            <div class="qty-btn" onclick="updateQty('${item.id}', 1)">+</div>
-            <span class="remove-item" onclick="removeFromCart('${item.id}')">Remove</span>
+            <div class="qty-btn" onclick="updateQty('${item.cartKey}', 1)">+</div>
+            <span class="remove-item" onclick="removeFromCart('${item.cartKey}')">Remove</span>
           </div>
         </div>
       </div>`).join('');
@@ -682,9 +652,17 @@
     document.getElementById('pm-cat').textContent = selectedProduct.category || '';
     document.getElementById('pm-desc').textContent = selectedProduct.description || 'No description available.';
     document.getElementById('pm-price').textContent = 'PKR ' + Number(selectedProduct.price).toLocaleString('en-PK');
-    document.getElementById('pm-stock').textContent = selectedProduct.stock_qty + ' in stock';
 
-const imgContainer = document.getElementById('pm-img-container');
+    var stockEl = document.getElementById('pm-stock');
+    if (selectedProduct.stock_qty === 0) {
+      stockEl.textContent = 'Out of stock';
+      stockEl.style.color = 'var(--danger)';
+    } else {
+      stockEl.textContent = selectedProduct.stock_qty + ' in stock';
+      stockEl.style.color = '';
+    }
+
+    const imgContainer = document.getElementById('pm-img-container');
     const images = selectedProduct.image_urls || [];
     if (images.length === 0) {
       imgContainer.innerHTML = `<div class="product-modal-img-placeholder"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg></div>`;
@@ -696,8 +674,7 @@ const imgContainer = document.getElementById('pm-img-container');
         ${images.length > 1 ? `
         <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
           ${images.map((url, i) => `
-            <img
-              src="${url}"
+            <img src="${url}"
               onclick="document.getElementById('pm-main-img').src='${url}';document.querySelectorAll('.thumb-img').forEach(t=>t.style.borderColor='transparent');this.style.borderColor='var(--green)'"
               class="thumb-img"
               style="width:64px;height:64px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;border:2px solid ${i===0?'var(--green)':'transparent'};transition:border-color 0.15s"
@@ -705,6 +682,29 @@ const imgContainer = document.getElementById('pm-img-container');
           `).join('')}
         </div>` : ''}
       `;
+    }
+
+    // Size selector
+    var sizeContainer = document.getElementById('pm-size-container');
+    if (!sizeContainer) {
+      var sizeDiv = document.createElement('div');
+      sizeDiv.id = 'pm-size-container';
+      sizeDiv.style.marginBottom = '16px';
+      var addBtn2 = document.getElementById('pm-add-btn');
+      addBtn2.parentNode.insertBefore(sizeDiv, addBtn2);
+      sizeContainer = sizeDiv;
+    }
+    window._selectedSize = null;
+    if (selectedProduct.sizes && selectedProduct.sizes.length > 0) {
+      sizeContainer.innerHTML =
+        '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Select Size</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:8px" id="pm-size-btns">' +
+        selectedProduct.sizes.map(function(s) {
+          return '<button onclick="selectSize('' + s + '')" id="size-btn-' + s.replace(/\s/g,'_') + '" style="padding:8px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'Barlow',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s">' + s + '</button>';
+        }).join('') +
+        '</div><div id="size-error" style="font-size:12px;color:var(--danger);margin-top:8px;display:none">Please select a size</div>';
+    } else {
+      sizeContainer.innerHTML = '';
     }
 
     const addBtn = document.getElementById('pm-add-btn');
@@ -719,11 +719,32 @@ const imgContainer = document.getElementById('pm-img-container');
     document.getElementById('product-modal').classList.add('open');
   }
 
-  function addToCartFromModal() {
-    if (selectedProduct) {
-      addToCart(selectedProduct.id);
-      closeModal('product-modal');
+  function selectSize(size) {
+    window._selectedSize = size;
+    document.querySelectorAll('#pm-size-btns button').forEach(function(btn) {
+      btn.style.background = 'rgba(255,255,255,0.05)';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--white)';
+    });
+    var btn = document.getElementById('size-btn-' + size.replace(/\s/g,'_'));
+    if (btn) {
+      btn.style.background = 'rgba(0,230,118,0.15)';
+      btn.style.borderColor = 'var(--green)';
+      btn.style.color = 'var(--green)';
     }
+    var err = document.getElementById('size-error');
+    if (err) err.style.display = 'none';
+  }
+
+  function addToCartFromModal() {
+    if (!selectedProduct) return;
+    if (selectedProduct.sizes && selectedProduct.sizes.length > 0 && !window._selectedSize) {
+      var err = document.getElementById('size-error');
+      if (err) err.style.display = 'block';
+      return;
+    }
+    addToCart(selectedProduct.id, window._selectedSize);
+    closeModal('product-modal');
   }
 
   // ── AUTH ──
@@ -897,7 +918,8 @@ async function placeOrder() {
       order_id: order.id,
       product_id: item.id,
       quantity: item.qty,
-      unit_price: item.price
+      unit_price: item.price,
+      selected_size: item.selectedSize || null
     }));
 
     const { error: itemsError } = await _supabase.from('order_items').insert(orderItems);
@@ -915,82 +937,31 @@ async function placeOrder() {
     el.textContent = '✓ Order placed successfully! The store will confirm shortly.';
     el.className = 'msg success';
 
+    // Decrement stock for each item
+    for (const item of cart) {
+      const newStock = Math.max(0, item.stock_qty - item.qty);
+      await _supabase.from('products').update({
+        stock_qty: newStock,
+        is_available: newStock > 0
+      }).eq('id', item.id);
+    }
+
+    // Send WhatsApp message if store has whatsapp number
+    if (currentStore.whatsapp_number) {
+      const itemsList = cart.map(item => `- ${item.name}${item.selectedSize ? ' ['+item.selectedSize+']' : ''} x${item.qty} = PKR ${(item.price * item.qty).toLocaleString('en-PK')}`).join('\n');
+      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const msg = `New Order on Harkiagh!\n\nCustomer: ${guestName}\nPhone: ${guestPhone}\nAddress: ${address}\n\nItems:\n${itemsList}\n\nTotal: PKR ${total.toLocaleString('en-PK')}\n${note ? 'Note: ' + note : ''}`;
+      const waUrl = 'https://wa.me/' + currentStore.whatsapp_number.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent(msg);
+      window.open(waUrl, '_blank');
+    }
+
     cart = [];
     updateCartUI();
-    filterProducts();
+    await loadProducts();
 
     setTimeout(() => closeModal('checkout-modal'), 2500);
     btn.disabled = false;
     btn.textContent = 'Place Order';
-  }
-
-  // ── CHAT ──
-  async function openChatModal() {
-    if (!currentUser) { openAuthModal('login'); return; }
-
-    document.getElementById('chat-modal').classList.add('open');
-
-    // Find or create chat
-    const { data: existingChat } = await _supabase
-      .from('chats')
-      .select('*')
-      .eq('store_id', currentStore.id)
-      .eq('customer_id', currentCustomer.id)
-      .single();
-
-    if (existingChat) {
-      currentChatId = existingChat.id;
-    } else {
-      const { data: newChat } = await _supabase.from('chats').insert({
-        store_id: currentStore.id,
-        customer_id: currentCustomer.id
-      }).select().single();
-      currentChatId = newChat?.id;
-    }
-
-    await loadChatMessages();
-    subscribeToChatMessages();
-  }
-
-  async function loadChatMessages() {
-    if (!currentChatId) return;
-    const { data: messages } = await _supabase
-      .from('messages').select('*')
-      .eq('chat_id', currentChatId)
-      .order('created_at', { ascending: true });
-
-    const container = document.getElementById('chat-messages');
-    if (!messages || messages.length === 0) {
-      container.innerHTML = `<div style="text-align:center;color:var(--gray);font-size:13px;padding:20px">Send a message to start the conversation!</div>`;
-      return;
-    }
-
-    container.innerHTML = messages.map(msg => {
-      const isMine = msg.sender_role === 'customer';
-      return `<div style="display:flex;justify-content:${isMine ? 'flex-end' : 'flex-start'}">
-        <div style="max-width:75%;padding:9px 13px;border-radius:${isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};background:${isMine ? 'var(--green)' : 'var(--dark3)'};color:${isMine ? 'var(--dark)' : 'var(--white)'};font-size:13px;border:${isMine ? 'none' : '1px solid var(--border)'}">${escapeHtml(msg.content)}</div>
-      </div>`;
-    }).join('');
-    container.scrollTop = container.scrollHeight;
-  }
-
-  async function sendChatMessage() {
-    if (!currentChatId) return;
-    const input = document.getElementById('chat-input');
-    const content = input.value.trim();
-    if (!content) return;
-    input.value = '';
-
-    await _supabase.from('messages').insert({ chat_id: currentChatId, sender_role: 'customer', content, is_read: false });
-    await loadChatMessages();
-  }
-
-  function subscribeToChatMessages() {
-    if (chatChannel) _supabase.removeChannel(chatChannel);
-    chatChannel = _supabase.channel('customer-chat-' + currentChatId)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${currentChatId}` },
-        () => loadChatMessages())
-      .subscribe();
   }
 
   function escapeHtml(text) {

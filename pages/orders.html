@@ -474,7 +474,8 @@
     let filtered = allOrders.filter(o => {
       const matchFilter = currentFilter === 'all' || o.status === currentFilter;
       const matchSearch = o.id.toLowerCase().includes(search) ||
-        (o.customers?.full_name || '').toLowerCase().includes(search);
+        (o.customers?.full_name || '').toLowerCase().includes(search) ||
+        (o.guest_name || '').toLowerCase().includes(search);
       return matchFilter && matchSearch;
     });
 
@@ -502,7 +503,7 @@
         <td><span class="order-id">#${o.id.slice(0,8).toUpperCase()}</span></td>
         <td>
           <div class="customer-name">${o.guest_name || o.customers?.full_name || 'Unknown'}</div>
-<div class="customer-phone">${o.guest_phone || o.customers?.phone || '—'}</div>
+          <div class="customer-phone">${o.guest_phone || o.customers?.phone || '—'}</div>
         </td>
         <td><span class="order-amount">PKR ${Number(o.total_amount).toLocaleString('en-PK')}</span></td>
         <td><span class="status-badge ${o.status}">${o.status}</span></td>
@@ -536,7 +537,7 @@
 
     document.getElementById('modal-order-id').textContent = '#' + order.id.slice(0,8).toUpperCase();
     document.getElementById('d-customer-name').textContent = order.guest_name || order.customers?.full_name || '—';
-document.getElementById('d-customer-phone').textContent = order.guest_phone || order.customers?.phone || '—';
+    document.getElementById('d-customer-phone').textContent = order.guest_phone || order.customers?.phone || '—';
     document.getElementById('d-address').textContent = order.delivery_address || '—';
     document.getElementById('d-note').textContent = order.delivery_note || '—';
     document.getElementById('d-order-id').textContent = order.id;
@@ -568,7 +569,7 @@ document.getElementById('d-customer-phone').textContent = order.guest_phone || o
             : `<div class="order-item-img" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="20" height="20" fill="rgba(255,255,255,0.1)"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg></div>`
           }
           <div style="flex:1">
-            <div class="order-item-name">${item.products?.name || 'Product'}</div>
+            <div class="order-item-name">${item.products?.name || 'Product'}${item.selected_size ? ' <span style="font-size:11px;color:var(--green);font-weight:600">['+item.selected_size+']</span>' : ''}</div>
             <div class="order-item-qty">Qty: ${item.quantity}</div>
           </div>
           <div class="order-item-price">PKR ${Number(item.unit_price * item.quantity).toLocaleString('en-PK')}</div>

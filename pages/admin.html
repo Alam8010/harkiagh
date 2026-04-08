@@ -532,7 +532,7 @@
       return '<tr>' +
         '<td><span class="mono">#' + o.id.slice(0,8).toUpperCase() + '</span></td>' +
         '<td>' + (o.stores ? o.stores.name : '—') + '</td>' +
-        '<td>' + (o.customers ? o.customers.full_name : '—') + '</td>' +
+        '<td>' + (o.guest_name || (o.customers ? o.customers.full_name : '—')) + '</td>' +
         '<td style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--green)">PKR ' + Number(o.total_amount).toLocaleString('en-PK') + '</td>' +
         '<td><span class="status-badge ' + o.status + '">' + o.status + '</span></td>' +
         '<td style="font-size:12px;color:var(--gray)">' + new Date(o.created_at).toLocaleDateString('en-PK') + '</td>' +

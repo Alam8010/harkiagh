@@ -633,7 +633,7 @@
   );
 
   const CLOUDINARY_CLOUD = 'dzpxkndcz';
-  const CLOUDINARY_PRESET = 'Harkiagh_logos';
+  const CLOUDINARY_PRESET = 'ml_default';
 
   let currentUser = null;
   let currentStore = null;
@@ -775,6 +775,11 @@ const statusBadge = p.status === 'approved'
     document.getElementById('prod-stock').value = '';
     document.getElementById('prod-category').value = '';
     document.getElementById('prod-desc').value = '';
+    document.getElementById('prod-size-type').value = '';
+    document.getElementById('size-options-field').style.display = 'none';
+    document.getElementById('custom-sizes-field').style.display = 'none';
+    document.getElementById('size-checkboxes').innerHTML = '';
+    document.getElementById('prod-custom-sizes') && (document.getElementById('prod-custom-sizes').value = '');
     document.getElementById('img-previews').innerHTML = '';
     document.getElementById('modal-msg').className = 'msg';
     document.getElementById('modal').classList.add('open');
@@ -793,6 +798,7 @@ const statusBadge = p.status === 'approved'
     document.getElementById('prod-stock').value = p.stock_qty;
     document.getElementById('prod-category').value = p.category || '';
     document.getElementById('prod-desc').value = p.description || '';
+    setSizeFields(p.size_type || '', p.sizes || []);
     document.getElementById('modal-msg').className = 'msg';
 
     const previews = document.getElementById('img-previews');
@@ -807,6 +813,61 @@ const statusBadge = p.status === 'approved'
 
   function closeModal() {
     document.getElementById('modal').classList.remove('open');
+  }
+
+  function updateSizeOptions() {
+    var sizeType = document.getElementById('prod-size-type').value;
+    var optionsField = document.getElementById('size-options-field');
+    var customField = document.getElementById('custom-sizes-field');
+    var checkboxes = document.getElementById('size-checkboxes');
+
+    optionsField.style.display = 'none';
+    customField.style.display = 'none';
+    checkboxes.innerHTML = '';
+
+    if (sizeType === 'clothing') {
+      var clothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+      checkboxes.innerHTML = clothingSizes.map(function(s) {
+        return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
+          '<input type="checkbox" value="' + s + '" style="accent-color:var(--green)"> ' + s + '</label>';
+      }).join('');
+      optionsField.style.display = 'block';
+    } else if (sizeType === 'footwear') {
+      var footSizes = ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
+      checkboxes.innerHTML = footSizes.map(function(s) {
+        return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
+          '<input type="checkbox" value="UK ' + s + '" style="accent-color:var(--green)"> UK ' + s + '</label>';
+      }).join('');
+      optionsField.style.display = 'block';
+    } else if (sizeType === 'custom') {
+      customField.style.display = 'block';
+    }
+  }
+
+  function getSelectedSizes() {
+    var sizeType = document.getElementById('prod-size-type').value;
+    if (!sizeType) return null;
+    if (sizeType === 'custom') {
+      var custom = document.getElementById('prod-custom-sizes').value.trim();
+      if (!custom) return null;
+      return custom.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    }
+    var checked = document.querySelectorAll('#size-checkboxes input:checked');
+    return Array.from(checked).map(function(c) { return c.value; });
+  }
+
+  function setSizeFields(sizeType, sizes) {
+    document.getElementById('prod-size-type').value = sizeType || '';
+    updateSizeOptions();
+    if (!sizes || sizes.length === 0) return;
+    if (sizeType === 'custom') {
+      document.getElementById('prod-custom-sizes').value = sizes.join(', ');
+    } else {
+      var checkboxes = document.querySelectorAll('#size-checkboxes input');
+      checkboxes.forEach(function(cb) {
+        cb.checked = sizes.includes(cb.value);
+      });
+    }
   }
 
   function removeImage(index) {
@@ -866,6 +927,9 @@ const statusBadge = p.status === 'approved'
     btn.disabled = true;
     btn.textContent = 'Saving...';
 
+    var sizeType = document.getElementById('prod-size-type').value;
+    var sizes = getSelectedSizes();
+
     const productData = {
       store_id: currentStore.id,
       name,
@@ -875,7 +939,9 @@ const statusBadge = p.status === 'approved'
       description: desc || null,
       image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
       is_available: parseInt(stock) > 0,
-      status: 'pending'
+      status: 'pending',
+      size_type: sizeType || null,
+      sizes: sizes && sizes.length > 0 ? sizes : null,
     };
 
     let error;
