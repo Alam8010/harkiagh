@@ -923,6 +923,7 @@ async function placeOrder() {
       customer_id: currentCustomer ? currentCustomer.id : null,
       guest_name: guestName,
       guest_phone: guestPhone,
+      guest_whatsapp: guestWhatsapp || null,
       status: 'pending',
       total_amount: total + 300,
       delivery_address: address,

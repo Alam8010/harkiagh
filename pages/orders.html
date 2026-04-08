@@ -367,6 +367,7 @@
         <div class="detail-card">
           <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value" id="d-customer-name">—</span></div>
           <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value" id="d-customer-phone">—</span></div>
+          <div class="detail-row"><span class="detail-label">WhatsApp</span><span class="detail-value" id="d-customer-whatsapp">—</span></div>
           <div class="detail-row"><span class="detail-label">Delivery Address</span><span class="detail-value" id="d-address">—</span></div>
           <div class="detail-row"><span class="detail-label">Note</span><span class="detail-value" id="d-note">—</span></div>
         </div>
@@ -538,6 +539,7 @@
     document.getElementById('modal-order-id').textContent = '#' + order.id.slice(0,8).toUpperCase();
     document.getElementById('d-customer-name').textContent = order.guest_name || order.customers?.full_name || '—';
     document.getElementById('d-customer-phone').textContent = order.guest_phone || order.customers?.phone || '—';
+    document.getElementById('d-customer-whatsapp').textContent = order.guest_whatsapp || '—';
     document.getElementById('d-address').textContent = order.delivery_address || '—';
     document.getElementById('d-note').textContent = order.delivery_note || '—';
     document.getElementById('d-order-id').textContent = order.id;
