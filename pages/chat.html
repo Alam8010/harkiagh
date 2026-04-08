@@ -328,7 +328,7 @@
 
   async function init() {
     const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) { window.location.href = 'index.html'; return; }
+    if (!session) { window.location.href = '../index.html'; return; }
 
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.email;
@@ -558,7 +558,7 @@
   async function handleLogout() {
     if (realtimeChannel) _supabase.removeChannel(realtimeChannel);
     await _supabase.auth.signOut();
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
   }
 
   init();

@@ -665,7 +665,7 @@
 
   async function init() {
     const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) { window.location.href = 'index.html'; return; }
+    if (!session) { window.location.href = '../index.html'; return; }
 
     currentUser = session.user;
     const name = currentUser.user_metadata?.full_name || currentUser.email;
@@ -1004,7 +1004,7 @@ const statusBadge = p.status === 'approved'
   async function handleLogout() {
     if (!confirm('Are you sure you want to sign out?')) return;
     await _supabase.auth.signOut();
-    window.location.href = 'index.html';
+    window.location.href = '../index.html';
   }
 
   init();
