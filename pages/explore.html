@@ -200,6 +200,7 @@
       .from('products')
       .select('*, stores(id, name, logo_url, slug)')
       .eq('is_available', true)
+      .eq('status', 'approved')
       .order('created_at', { ascending: false });
 
     allProducts = products || [];
