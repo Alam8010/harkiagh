@@ -444,7 +444,7 @@
   async function loadOrders() {
     const { data: orders } = await _supabase
       .from('orders')
-      .select(`*, customers(full_name, phone)`)
+      .select(`*, customers(full_name, phone), order_items(*, products(name))`)
       .eq('store_id', currentStore.id)
       .order('created_at', { ascending: false });
 
@@ -501,8 +501,8 @@
       <tr>
         <td><span class="order-id">#${o.id.slice(0,8).toUpperCase()}</span></td>
         <td>
-          <div class="customer-name">${o.customers?.full_name || 'Unknown'}</div>
-          <div class="customer-phone">${o.customers?.phone || '—'}</div>
+          <div class="customer-name">${o.guest_name || o.customers?.full_name || 'Unknown'}</div>
+<div class="customer-phone">${o.guest_phone || o.customers?.phone || '—'}</div>
         </td>
         <td><span class="order-amount">PKR ${Number(o.total_amount).toLocaleString('en-PK')}</span></td>
         <td><span class="status-badge ${o.status}">${o.status}</span></td>
@@ -535,8 +535,8 @@
     selectedStatus = order.status;
 
     document.getElementById('modal-order-id').textContent = '#' + order.id.slice(0,8).toUpperCase();
-    document.getElementById('d-customer-name').textContent = order.customers?.full_name || '—';
-    document.getElementById('d-customer-phone').textContent = order.customers?.phone || '—';
+    document.getElementById('d-customer-name').textContent = order.guest_name || order.customers?.full_name || '—';
+document.getElementById('d-customer-phone').textContent = order.guest_phone || order.customers?.phone || '—';
     document.getElementById('d-address').textContent = order.delivery_address || '—';
     document.getElementById('d-note').textContent = order.delivery_note || '—';
     document.getElementById('d-order-id').textContent = order.id;
