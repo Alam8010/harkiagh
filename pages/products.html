@@ -590,15 +590,37 @@
         <label>Category</label>
         <select id="prod-category">
           <option value="">Select category</option>
-          <option value="Cricket">Cricket</option>
-          <option value="Football">Football</option>
-          <option value="Basketball">Basketball</option>
-          <option value="Tennis">Tennis</option>
-          <option value="Fitness">Fitness</option>
           <option value="Clothing">Clothing</option>
           <option value="Footwear">Footwear</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Sports">Sports</option>
+          <option value="Home & Kitchen">Home & Kitchen</option>
+          <option value="Beauty">Beauty</option>
+          <option value="Books">Books</option>
+          <option value="Toys">Toys</option>
+          <option value="Food">Food</option>
           <option value="Other">Other</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label>Size Type</label>
+        <select id="prod-size-type" onchange="updateSizeOptions()">
+          <option value="">No sizes (one size fits all)</option>
+          <option value="clothing">Clothing (XS, S, M, L, XL, XXL)</option>
+          <option value="footwear">Footwear (UK sizes 4–13)</option>
+          <option value="custom">Custom sizes</option>
+        </select>
+      </div>
+
+      <div class="field" id="size-options-field" style="display:none">
+        <label>Available Sizes <span style="color:var(--gray);font-weight:400;font-size:11px">(check all that apply)</span></label>
+        <div id="size-checkboxes" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px"></div>
+      </div>
+
+      <div class="field" id="custom-sizes-field" style="display:none">
+        <label>Custom Sizes <span style="color:var(--gray);font-weight:400;font-size:11px">(comma separated, e.g. 250ml, 500ml, 1L)</span></label>
+        <input type="text" id="prod-custom-sizes" placeholder="e.g. Small, Medium, Large" />
       </div>
 
       <div class="field">
