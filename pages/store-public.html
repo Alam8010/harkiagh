@@ -887,6 +887,20 @@ async function placeOrder() {
       el.className = 'msg error';
       return;
     }
+    // Check stock availability before placing order
+    for (const item of cart) {
+      const { data: freshProduct } = await _supabase
+        .from('products')
+        .select('stock_qty, name')
+        .eq('id', item.id)
+        .single();
+      if (!freshProduct || item.qty > freshProduct.stock_qty) {
+        const el = document.getElementById('checkout-msg');
+        el.textContent = `Sorry, only ${freshProduct ? freshProduct.stock_qty : 0} unit(s) of "${item.name}" are available.`;
+        el.className = 'msg error';
+        return;
+      }
+    }
 
     const btn = document.getElementById('checkout-btn');
     btn.disabled = true;
