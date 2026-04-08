@@ -970,15 +970,6 @@ async function placeOrder() {
       }).eq('id', item.id);
     }
 
-    // Send WhatsApp message if store has whatsapp number
-    if (currentStore.whatsapp_number) {
-      const itemsList = cart.map(item => `- ${item.name}${item.selectedSize ? ' ['+item.selectedSize+']' : ''} x${item.qty} = PKR ${(item.price * item.qty).toLocaleString('en-PK')}`).join('\n');
-      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-      const msg = `New Order on Harkiagh!\n\nCustomer: ${guestName}\nPhone: ${guestPhone}${guestWhatsapp ? '\nWhatsApp: ' + guestWhatsapp : ''}\nAddress: ${address}\n\nItems:\n${itemsList}\n\nDelivery Charges: PKR 300\nTotal (with delivery): PKR ${(total + 300).toLocaleString('en-PK')}\n${note ? 'Note: ' + note : ''}`;
-      const waUrl = 'https://wa.me/' + currentStore.whatsapp_number.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent(msg);
-      window.open(waUrl, '_blank');
-    }
-
     cart = [];
     updateCartUI();
     await loadProducts();
