@@ -392,6 +392,7 @@
       <div class="order-summary" id="order-summary"></div>
       <div class="field"><label>Full Name</label><input type="text" id="guest-name" placeholder="Your full name" /></div>
       <div class="field"><label>Phone Number</label><input type="text" id="guest-phone" placeholder="0300-1234567" /></div>
+      <div class="field"><label>WhatsApp Number <span style="color:var(--gray);font-size:11px;font-weight:400">(optional, if different from phone)</span></label><input type="text" id="guest-whatsapp" placeholder="0300-1234567" /></div>
       <div class="field"><label>Delivery Address</label><textarea id="checkout-address" placeholder="Your full delivery address..."></textarea></div>
       <div class="field"><label>Order Note (optional)</label><input type="text" id="checkout-note" placeholder="Any special instructions..." /></div>
     </div>
@@ -866,6 +867,7 @@ async function placeOrder() {
     const note = document.getElementById('checkout-note').value.trim();
     const guestName = document.getElementById('guest-name').value.trim();
     const guestPhone = document.getElementById('guest-phone').value.trim();
+    const guestWhatsapp = document.getElementById('guest-whatsapp').value.trim();
 
     if (!guestName) {
       const el = document.getElementById('checkout-msg');
@@ -964,7 +966,7 @@ async function placeOrder() {
     if (currentStore.whatsapp_number) {
       const itemsList = cart.map(item => `- ${item.name}${item.selectedSize ? ' ['+item.selectedSize+']' : ''} x${item.qty} = PKR ${(item.price * item.qty).toLocaleString('en-PK')}`).join('\n');
       const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-      const msg = `New Order on Harkiagh!\n\nCustomer: ${guestName}\nPhone: ${guestPhone}\nAddress: ${address}\n\nItems:\n${itemsList}\n\nTotal: PKR ${total.toLocaleString('en-PK')}\n${note ? 'Note: ' + note : ''}`;
+      const msg = `New Order on Harkiagh!\n\nCustomer: ${guestName}\nPhone: ${guestPhone}${guestWhatsapp ? '\nWhatsApp: ' + guestWhatsapp : ''}\nAddress: ${address}\n\nItems:\n${itemsList}\n\nDelivery Charges: PKR 300\nTotal (with delivery): PKR ${(total + 300).toLocaleString('en-PK')}\n${note ? 'Note: ' + note : ''}`;
       const waUrl = 'https://wa.me/' + currentStore.whatsapp_number.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent(msg);
       window.open(waUrl, '_blank');
     }
