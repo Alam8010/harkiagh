@@ -615,7 +615,7 @@
     countEl.textContent = count;
     countEl.classList.toggle('show', count > 0);
 
-    document.getElementById('cart-total').textContent = 'PKR ' + total.toLocaleString('en-PK');
+    document.getElementById('cart-total').textContent = 'PKR ' + (total + 300).toLocaleString('en-PK');
 
     const container = document.getElementById('cart-items-container');
     if (cart.length === 0) {
@@ -849,9 +849,17 @@ async function handleLogout() {
         <span>${item.name} × ${item.qty}</span>
         <span>PKR ${Number(item.price * item.qty).toLocaleString('en-PK')}</span>
       </div>`).join('') + `
+      <div class="order-summary-item">
+        <span>Subtotal</span>
+        <span>PKR ${total.toLocaleString('en-PK')}</span>
+      </div>
+      <div class="order-summary-item">
+        <span>Delivery Charges</span>
+        <span>PKR 300</span>
+      </div>
       <div class="order-summary-total">
         <span>Total</span>
-        <span>PKR ${total.toLocaleString('en-PK')}</span>
+        <span>PKR ${(total + 300).toLocaleString('en-PK')}</span>
       </div>`;
 
     if (currentCustomer?.address) {
@@ -916,7 +924,7 @@ async function placeOrder() {
       guest_name: guestName,
       guest_phone: guestPhone,
       status: 'pending',
-      total_amount: total,
+      total_amount: total + 300,
       delivery_address: address,
       delivery_note: note || null
     }).select().single();
