@@ -187,6 +187,9 @@
 
   let allProducts = [];
   let selectedCategory = '';
+  const PAGE_SIZE = 12;
+  let currentPage = 0;
+  let filteredProducts = [];
   let authMode = 'login';
 
   async function init() {
@@ -194,9 +197,6 @@
     await loadData();
   }
 
-  const PAGE_SIZE = 12;
-  let currentPage = 0;
-  let filteredProducts = [];
 
   async function loadData() {
     const { data: products } = await _supabase
@@ -213,6 +213,7 @@
     renderPage(true);
     loadSidebarStores();
   }
+
   function buildCategoryPills() {
     const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
     const container = document.getElementById('cat-pills');
@@ -259,7 +260,7 @@
       const inStock = p.is_available && p.stock_qty > 0;
       return `
         <div class="product-card ${!inStock ? 'out-of-stock' : ''}" onclick="window.location.href='${storeUrl}'">
-           ${p.image_urls?.[0]
+          ${p.image_urls?.[0]
             ? `<img class="product-img" src="${p.image_urls[0]}" alt="${p.name}" loading="lazy"/>`
             : `<div class="product-img-placeholder"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>`
           }
@@ -279,7 +280,6 @@
       document.getElementById('products-grid').innerHTML += cardsHtml;
     }
 
-    // Load more button
     const existing = document.getElementById('load-more-btn');
     if (existing) existing.remove();
     if (hasMore) {
@@ -295,13 +295,6 @@
     currentPage++;
     renderPage(false);
   }
-
-  function renderProducts(products) {
-    filteredProducts = products;
-    currentPage = 0;
-    renderPage(true);
-  }
-
 
   async function loadSidebarStores() {
     const { data: stores } = await _supabase
