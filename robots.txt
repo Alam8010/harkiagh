@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /pages/explore.html
+Allow: /pages/stores.html
+Allow: /pages/store-public.html
+
+Disallow: /pages/dashboard.html
+Disallow: /pages/admin.html
+Disallow: /pages/products.html
+Disallow: /pages/orders.html
+Disallow: /pages/profile.html
+Disallow: /pages/store-setup.html
+Disallow: /pages/payment.html
+Disallow: /pages/chat.html
+Disallow: /pages/reset-password.html
+
+Sitemap: https://sabhai.store/sitemap.xml
