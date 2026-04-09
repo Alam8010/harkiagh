@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Store — Sabhai</title>
+  <meta name="description" content="Shop online from local Pakistani stores on Sabhai — Pakistan's marketplace." />
+  <meta name="robots" content="index, follow" />
+  <!-- OG updated dynamically by JS when store loads -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sabhai" />
+  <meta property="og:image" content="https://sabhai.store/og-image.jpg" />
+  <meta property="og:title" content="Store — Sabhai" id="og-title-tag" />
+  <meta property="og:description" content="Shop from this store on Sabhai — Pakistan's online marketplace." id="og-desc-tag" />
+  <meta property="og:url" content="" id="og-url-tag" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -483,6 +492,13 @@
     document.title = currentStore.name + ' — Sabhai';
     document.getElementById('nav-store-name').textContent = currentStore.name;
     document.getElementById('hero-name').textContent = currentStore.name;
+    // Update OG tags dynamically for social sharing
+    var storeUrl = 'https://sabhai.store/pages/store-public.html?store=' + currentStore.slug;
+    var storeDesc = (currentStore.description || 'Shop from ' + currentStore.name) + ' — on Sabhai, Pakistan\'s online marketplace.';
+    document.getElementById('og-title-tag') && (document.getElementById('og-title-tag').content = currentStore.name + ' — Sabhai');
+    document.getElementById('og-desc-tag') && (document.getElementById('og-desc-tag').content = storeDesc);
+    document.getElementById('og-url-tag') && (document.getElementById('og-url-tag').content = storeUrl);
+    document.querySelector('link[rel="canonical"]') ? document.querySelector('link[rel="canonical"]').href = storeUrl : (function(){ var l = document.createElement('link'); l.rel='canonical'; l.href=storeUrl; document.head.appendChild(l); })();
     document.getElementById('hero-desc').textContent = currentStore.description || '';
 
     if (currentStore.logo_url) {
