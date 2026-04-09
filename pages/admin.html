@@ -430,6 +430,13 @@
     allProducts = productsRes.data || [];
     allPayments = paymentsRes.data || [];
 
+    // Enrich stores with owner email from payments data
+    allStores = allStores.map(function(s) {
+      var ownerPayment = allPayments.find(function(p) { return p.user_id === s.owner_id; });
+      return Object.assign({}, s, { owner_email: ownerPayment ? ownerPayment.email : '' });
+    });
+    allPayments = paymentsRes.data || [];
+
     renderOverview();
     renderStores();
     renderUsers();
@@ -481,17 +488,47 @@
     if (result.length === 0) { container.innerHTML = '<div class="empty-state">No stores found</div>'; return; }
 
     var rows = result.map(function(s) {
+      // Find all approved payments for this store owner, pick the most recent
+      var ownerPayments = allPayments.filter(function(p) {
+        return p.user_id === s.owner_id && p.status === 'approved';
+      });
+      ownerPayments.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+      var lastApproved = ownerPayments.length > 0 ? ownerPayments[0] : null;
+
+      // Check if there's a pending monthly payment
+      var hasPendingMonthly = allPayments.some(function(p) {
+        return p.user_id === s.owner_id && p.status === 'pending' && p.payment_type === 'monthly';
+      });
+
+      var feeCell;
+      if (hasPendingMonthly) {
+        feeCell = '<span style="background:rgba(255,179,0,0.12);color:#FFB300;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px">⏳ Pending Review</span>';
+      } else if (!lastApproved) {
+        feeCell = '<span style="background:rgba(255,59,59,0.1);color:var(--danger);font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px">No Payment</span>';
+      } else {
+        var lastDate = new Date(lastApproved.created_at);
+        var daysSince = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+        var dateStr = lastDate.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+        if (daysSince <= 30) {
+          feeCell = '<span style="background:rgba(0,230,118,0.1);color:var(--green);font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px">✓ Paid</span><div style="font-size:11px;color:var(--gray);margin-top:3px">' + dateStr + ' · ' + daysSince + 'd ago</div>';
+        } else if (daysSince <= 37) {
+          feeCell = '<span style="background:rgba(255,179,0,0.12);color:#FFB300;font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px">⚠ Due Soon</span><div style="font-size:11px;color:var(--gray);margin-top:3px">' + dateStr + ' · ' + daysSince + 'd ago</div>';
+        } else {
+          feeCell = '<span style="background:rgba(255,59,59,0.1);color:var(--danger);font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px">✕ Overdue</span><div style="font-size:11px;color:var(--gray);margin-top:3px">' + dateStr + ' · ' + daysSince + 'd ago</div>';
+        }
+      }
+
       return '<tr>' +
-        '<td><div class="store-name-cell">' + s.name + '</div></td>' +
-        '<td><span class="mono">' + s.slug + '</span></td>' +
+        '<td><div class="store-name-cell">' + s.name + '</div><div style="font-size:11px;color:var(--gray)">' + (s.owner_email || '') + '</div></td>' +
         '<td>' + (s.location || '—') + '</td>' +
         '<td>' + (s.phone || '—') + '</td>' +
+        '<td>' + feeCell + '</td>' +
         '<td><span class="status-badge ' + (s.is_active ? 'active' : 'inactive') + '">' + (s.is_active ? 'Active' : 'Inactive') + '</span></td>' +
         '<td><button class="action-btn ' + (s.is_active ? 'deactivate' : 'activate') + '" onclick="toggleStore(\'' + s.id + '\', ' + s.is_active + ')">' + (s.is_active ? 'Deactivate' : 'Activate') + '</button></td>' +
         '</tr>';
     }).join('');
 
-    container.innerHTML = '<table class="data-table"><thead><tr><th>Store Name</th><th>Slug</th><th>Location</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    container.innerHTML = '<table class="data-table"><thead><tr><th>Store Name</th><th>Location</th><th>Phone</th><th>Monthly Fee</th><th>Status</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   function renderUsers() {
