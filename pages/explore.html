@@ -194,8 +194,11 @@
     await loadData();
   }
 
+  const PAGE_SIZE = 12;
+  let currentPage = 0;
+  let filteredProducts = [];
+
   async function loadData() {
-    // Load products from all active stores, newest first
     const { data: products } = await _supabase
       .from('products')
       .select('*, stores(id, name, logo_url, slug)')
@@ -204,11 +207,12 @@
       .order('created_at', { ascending: false });
 
     allProducts = products || [];
+    filteredProducts = allProducts;
     buildCategoryPills();
-    renderProducts(allProducts);
+    currentPage = 0;
+    renderPage(true);
     loadSidebarStores();
   }
-
   function buildCategoryPills() {
     const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
     const container = document.getElementById('cat-pills');
@@ -226,25 +230,30 @@
 
   function filterProducts() {
     const search = document.getElementById('search-input').value.toLowerCase();
-    const filtered = allProducts.filter(p => {
+    filteredProducts = allProducts.filter(p => {
       const matchCat = !selectedCategory || p.category === selectedCategory;
       const matchSearch = p.name.toLowerCase().includes(search) || (p.description || '').toLowerCase().includes(search);
       return matchCat && matchSearch;
     });
-    renderProducts(filtered);
+    currentPage = 0;
+    renderPage(true);
   }
 
-  function renderProducts(products) {
+  function renderPage(reset) {
     const container = document.getElementById('products-container');
     const meta = document.getElementById('products-meta');
-    meta.innerHTML = `Showing <span>${products.length}</span> product${products.length !== 1 ? 's' : ''}`;
+    const start = currentPage * PAGE_SIZE;
+    const pageItems = filteredProducts.slice(start, start + PAGE_SIZE);
+    const hasMore = start + PAGE_SIZE < filteredProducts.length;
 
-    if (products.length === 0) {
+    meta.innerHTML = `Showing <span>${Math.min(start + PAGE_SIZE, filteredProducts.length)}</span> of <span>${filteredProducts.length}</span> products`;
+
+    if (filteredProducts.length === 0) {
       container.innerHTML = `<div class="empty"><div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M19 5H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-7 9l-4-4 1.41-1.41L12 11.17l6.59-6.58L20 6l-8 8z"/></svg></div><div class="empty-title">No products found</div></div>`;
       return;
     }
 
-    container.innerHTML = `<div class="products-grid">${products.map(p => {
+    const cardsHtml = pageItems.map(p => {
       const store = p.stores;
       const storeUrl = store ? `store-public.html?store=${store.slug}` : '#';
       const inStock = p.is_available && p.stock_qty > 0;
@@ -262,7 +271,36 @@
             <div class="product-price">PKR ${p.price.toLocaleString('en-PK')}</div>
           </div>
         </div>`;
-    }).join('')}</div>`;
+    }).join('');
+
+    if (reset) {
+      container.innerHTML = `<div class="products-grid" id="products-grid">${cardsHtml}</div>`;
+    } else {
+      document.getElementById('products-grid').innerHTML += cardsHtml;
+    }
+
+    // Load more button
+    const existing = document.getElementById('load-more-btn');
+    if (existing) existing.remove();
+    if (hasMore) {
+      const btn = document.createElement('div');
+      btn.id = 'load-more-btn';
+      btn.style = 'text-align:center;margin-top:28px';
+      btn.innerHTML = `<button onclick="loadMore()" style="padding:12px 32px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.3);color:var(--green);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer">Load More Products</button>`;
+      container.appendChild(btn);
+    }
+  }
+
+  function loadMore() {
+    currentPage++;
+    renderPage(false);
+  }
+
+  function renderProducts(products) {
+    filteredProducts = products;
+    currentPage = 0;
+    renderPage(true);
+  }
   }
 
   async function loadSidebarStores() {
