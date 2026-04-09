@@ -657,6 +657,133 @@
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .bottom-grid { grid-template-columns: 1fr; }
     }
+    /* ── MONTHLY FEE CARD ── */
+    .fee-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,179,0,0.2);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .fee-card.paid {
+      border-color: rgba(0,230,118,0.2);
+      background: rgba(0,230,118,0.03);
+    }
+    .fee-card.pending-fee {
+      border-color: rgba(255,179,0,0.25);
+      background: rgba(255,179,0,0.04);
+    }
+    .fee-card-left { display: flex; align-items: center; gap: 14px; }
+    .fee-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255,179,0,0.12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .fee-icon svg { width: 22px; height: 22px; fill: var(--warning); }
+    .fee-icon.green { background: rgba(0,230,118,0.12); }
+    .fee-icon.green svg { fill: var(--green); }
+    .fee-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .fee-sub { font-size: 12px; color: var(--gray); }
+    .fee-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; padding: 6px 14px;
+      border-radius: 100px;
+    }
+    .fee-badge.paid { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+    .fee-badge.pending-fee { background: rgba(255,179,0,0.1); color: var(--warning); border: 1px solid rgba(255,179,0,0.25); }
+    .fee-btn {
+      padding: 9px 20px;
+      background: var(--warning);
+      color: #000;
+      border: none; border-radius: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.15s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .fee-btn:hover { opacity: 0.88; }
+
+    /* ── FEE MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.75);
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%; max-width: 500px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .modal-close { background: none; border: none; color: var(--gray); font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; }
+    .modal-close:hover { color: var(--white); }
+    .modal-body { padding: 24px; }
+    .bank-box {
+      background: rgba(0,230,118,0.05);
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 12px; padding: 16px; margin-bottom: 20px;
+    }
+    .bank-box-title { font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .bank-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .bank-row:last-child { margin-bottom: 0; }
+    .bank-label { font-size: 12px; color: var(--gray); }
+    .bank-value { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .copy-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 5px; color: var(--gray); font-size: 11px;
+      padding: 2px 7px; cursor: pointer; font-family: 'Barlow', sans-serif;
+    }
+    .copy-btn:hover { color: var(--white); }
+    .amount-highlight { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--green); }
+    .mfield { margin-bottom: 16px; }
+    .mfield label { display: block; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 7px; }
+    .mfield input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 11px 14px; font-family: 'Barlow', sans-serif; font-size: 14px; color: var(--white); outline: none; transition: border-color 0.2s; }
+    .mfield input::placeholder { color: rgba(255,255,255,0.2); }
+    .mfield input:focus { border-color: rgba(0,230,118,0.4); }
+    .upload-area {
+      border: 2px dashed rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 22px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .upload-area:hover { border-color: rgba(0,230,118,0.3); }
+    .upload-area.has-file { border-color: rgba(0,230,118,0.4); background: rgba(0,230,118,0.04); }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-text { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+    .upload-sub { font-size: 12px; color: var(--gray); }
+    .upload-filename { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 500; }
+    .modal-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none; }
+    .modal-msg.error { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.2); color: var(--danger); display: block; }
+    .modal-submit {
+      width: 100%; padding: 13px;
+      background: var(--warning); color: #000;
+      border: none; border-radius: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.15s; margin-top: 6px;
+    }
+    .modal-submit:hover { opacity: 0.88; }
+    .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* pending state inside modal */
+    .modal-pending { text-align: center; padding: 32px 16px; }
+    .modal-pending-icon { width: 60px; height: 60px; background: rgba(255,179,0,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .modal-pending-icon svg { width: 30px; height: 30px; fill: var(--warning); }
+    .modal-pending-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; margin-bottom: 8px; }
+    .modal-pending-sub { font-size: 13px; color: var(--gray); line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -819,6 +946,20 @@
       </div>
     </div>
 
+    <!-- Monthly Fee Card -->
+    <div class="fee-card animate" id="fee-card" style="display:none">
+      <div class="fee-card-left">
+        <div class="fee-icon" id="fee-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div>
+          <div class="fee-title" id="fee-title">Monthly Store Fee</div>
+          <div class="fee-sub" id="fee-sub">Loading...</div>
+        </div>
+      </div>
+      <button class="fee-btn" id="fee-btn" onclick="openFeeModal()">Pay Store Fee</button>
+    </div>
+
     <!-- Bottom Grid -->
     <div class="bottom-grid">
 
@@ -895,6 +1036,71 @@
   </div>
 </div>
 
+<!-- ── MONTHLY FEE MODAL ── -->
+<div class="modal-overlay" id="fee-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Pay Monthly Store Fee</div>
+      <button class="modal-close" onclick="closeFeeModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Form view -->
+      <div id="modal-form-view">
+        <!-- Meezan Bank -->
+        <div class="bank-box">
+          <div class="bank-box-title">Meezan Bank</div>
+          <div class="bank-row"><div class="bank-label">Account Title</div><div class="bank-value">Akash Alam</div></div>
+          <div class="bank-row">
+            <div class="bank-label">Account Number</div>
+            <div class="bank-value">00300114582074 <button class="copy-btn" onclick="copyFeeText('00300114582074',this)">Copy</button></div>
+          </div>
+          <div class="bank-row"><div class="bank-label">Amount</div><div class="bank-value"><span class="amount-highlight">PKR 4,000</span></div></div>
+        </div>
+        <!-- NayaPay -->
+        <div class="bank-box" style="border-color:rgba(41,121,255,0.15);background:rgba(41,121,255,0.05);margin-bottom:20px">
+          <div class="bank-box-title" style="color:#2979FF">NayaPay</div>
+          <div class="bank-row"><div class="bank-label">Account Title</div><div class="bank-value">Akash Alam</div></div>
+          <div class="bank-row">
+            <div class="bank-label">NayaPay Number</div>
+            <div class="bank-value">+923198810859 <button class="copy-btn" onclick="copyFeeText('+923198810859',this)">Copy</button></div>
+          </div>
+          <div class="bank-row"><div class="bank-label">Amount</div><div class="bank-value"><span class="amount-highlight">PKR 4,000</span></div></div>
+        </div>
+
+        <div class="modal-msg" id="modal-msg"></div>
+
+        <div class="mfield">
+          <label>Transaction ID (TRX ID)</label>
+          <input type="text" id="modal-trx" placeholder="Enter your transaction ID" />
+        </div>
+
+        <div class="mfield">
+          <label>Payment Screenshot</label>
+          <div class="upload-area" id="modal-upload-area">
+            <input type="file" id="modal-screenshot" accept="image/*" onchange="handleModalFile(this)" />
+            <div class="upload-text" id="modal-upload-text">Click to upload screenshot</div>
+            <div class="upload-sub">JPG, PNG supported</div>
+            <div class="upload-filename" id="modal-upload-filename"></div>
+          </div>
+        </div>
+
+        <button class="modal-submit" id="modal-submit-btn" onclick="submitMonthlyFee()">Submit Payment Proof</button>
+      </div>
+
+      <!-- Pending view -->
+      <div id="modal-pending-view" style="display:none" class="modal-pending">
+        <div class="modal-pending-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="modal-pending-title">Payment Under Review</div>
+        <div class="modal-pending-sub">Your monthly fee proof has been submitted. Admin will verify and confirm within 24 hours. Your store remains active in the meantime.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
   const { createClient } = supabase;
   const _supabase = createClient(
@@ -908,13 +1114,174 @@
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  async function init() {
-    // Check auth
-    const { data: { session } } = await _supabase.auth.getSession();
-    if (!session) {
-      window.location.href = '../index.html';
+  // ── MONTHLY FEE ──
+  let feeSelectedFile = null;
+  let currentUserId = null;
+
+  function openFeeModal() { document.getElementById('fee-modal').classList.add('open'); }
+  function closeFeeModal() { document.getElementById('fee-modal').classList.remove('open'); }
+
+  function handleModalFile(input) {
+    if (input.files && input.files[0]) {
+      feeSelectedFile = input.files[0];
+      document.getElementById('modal-upload-filename').textContent = feeSelectedFile.name;
+      document.getElementById('modal-upload-text').textContent = 'Screenshot selected';
+      document.getElementById('modal-upload-area').classList.add('has-file');
+    }
+  }
+
+  function copyFeeText(text, btn) {
+    navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+
+  async function loadFeeStatus(userId) {
+    const feeCard = document.getElementById('fee-card');
+    feeCard.style.display = 'flex';
+
+    // Get the initial approved payment to know when store started
+    const { data: initialPayment } = await _supabase
+      .from('subscription_payments')
+      .select('created_at, status')
+      .eq('user_id', userId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+
+    if (!initialPayment) return; // no approved payment yet
+
+    // Get latest monthly payment (any type, most recent)
+    const { data: lastPayment } = await _supabase
+      .from('subscription_payments')
+      .select('created_at, status, payment_type')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    const feeIcon = document.getElementById('fee-icon');
+    const feeTitle = document.getElementById('fee-title');
+    const feeSub = document.getElementById('fee-sub');
+    const feeBtn = document.getElementById('fee-btn');
+
+    // If latest payment is pending monthly fee
+    if (lastPayment && lastPayment.payment_type === 'monthly' && lastPayment.status === 'pending') {
+      feeCard.classList.add('pending-fee');
+      feeIcon.className = 'fee-icon';
+      feeTitle.textContent = 'Monthly Fee — Under Review';
+      feeSub.textContent = 'Your payment proof has been submitted. Admin will verify within 24 hours.';
+      feeBtn.outerHTML = '<span class="fee-badge pending-fee">⏳ Pending Approval</span>';
+      // show pending view in modal too in case they open it
+      document.getElementById('modal-form-view').style.display = 'none';
+      document.getElementById('modal-pending-view').style.display = 'block';
       return;
     }
+
+    // Calculate next due date: 30 days after last approved payment
+    const lastApproved = lastPayment && lastPayment.status === 'approved'
+      ? new Date(lastPayment.created_at)
+      : new Date(initialPayment.created_at);
+
+    const nextDue = new Date(lastApproved);
+    nextDue.setDate(nextDue.getDate() + 30);
+    const today = new Date();
+    const daysUntilDue = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
+    const dueDateStr = nextDue.toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (daysUntilDue > 7) {
+      // Paid & not due yet
+      feeCard.classList.add('paid');
+      feeIcon.className = 'fee-icon green';
+      feeIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+      feeTitle.textContent = 'Monthly Fee Paid';
+      feeSub.textContent = 'Next payment due: ' + dueDateStr;
+      feeBtn.outerHTML = '<span class="fee-badge paid">✓ Paid for this month</span>';
+    } else if (daysUntilDue > 0) {
+      // Due soon — show button
+      feeTitle.textContent = 'Monthly Fee Due Soon';
+      feeSub.textContent = 'Due in ' + daysUntilDue + ' day' + (daysUntilDue === 1 ? '' : 's') + ' — ' + dueDateStr;
+    } else {
+      // Overdue
+      feeTitle.textContent = 'Monthly Fee Overdue';
+      feeSub.textContent = 'Due date was ' + dueDateStr + '. Please pay to avoid store deactivation.';
+      feeBtn.style.background = 'var(--danger)';
+    }
+  }
+
+  async function submitMonthlyFee() {
+    const trxId = document.getElementById('modal-trx').value.trim();
+    if (!trxId) { showModalMsg('Please enter your Transaction ID.'); return; }
+    if (!feeSelectedFile) { showModalMsg('Please upload your payment screenshot.'); return; }
+
+    const btn = document.getElementById('modal-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+
+    const fileExt = feeSelectedFile.name.split('.').pop();
+    const fileName = currentUserId + '_monthly_' + Date.now() + '.' + fileExt;
+
+    const { error: uploadError } = await _supabase.storage
+      .from('payment-screenshots')
+      .upload(fileName, feeSelectedFile);
+
+    if (uploadError) {
+      showModalMsg('Screenshot upload failed: ' + uploadError.message);
+      btn.disabled = false; btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    const { data: urlData } = _supabase.storage.from('payment-screenshots').getPublicUrl(fileName);
+
+    const { data: { user } } = await _supabase.auth.getUser();
+
+    const { error: insertError } = await _supabase
+      .from('subscription_payments')
+      .insert({
+        user_id: currentUserId,
+        full_name: user.user_metadata?.full_name || '',
+        email: user.email,
+        amount: 4000,
+        trx_id: trxId,
+        screenshot_url: urlData.publicUrl,
+        status: 'pending',
+        payment_type: 'monthly'
+      });
+
+    if (insertError) {
+      showModalMsg('Submission failed: ' + insertError.message);
+      btn.disabled = false; btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    // Show pending view
+    document.getElementById('modal-form-view').style.display = 'none';
+    document.getElementById('modal-pending-view').style.display = 'block';
+
+    // Update the card without page reload
+    const feeCard = document.getElementById('fee-card');
+    feeCard.className = 'fee-card pending-fee animate';
+    document.getElementById('fee-title').textContent = 'Monthly Fee — Under Review';
+    document.getElementById('fee-sub').textContent = 'Your payment proof has been submitted. Admin will verify within 24 hours.';
+    const feeBtn = document.getElementById('fee-btn');
+    if (feeBtn) feeBtn.outerHTML = '<span class="fee-badge pending-fee">⏳ Pending Approval</span>';
+  }
+
+  function showModalMsg(text) {
+    const el = document.getElementById('modal-msg');
+    el.textContent = text;
+    el.className = 'modal-msg error';
+  }
+
+  // Close modal on overlay click
+  document.getElementById('fee-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFeeModal();
+  });
+
+  async function init() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = '../index.html'; return; }
 
    try {
   const { data: store } = await _supabase
@@ -940,6 +1307,7 @@
 }
 
     const user = session.user;
+    currentUserId = user.id;
     const name = user.user_metadata?.full_name || user.email;
     const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
@@ -1006,6 +1374,9 @@
         `;
       }
     }
+
+    // Load monthly fee status
+    loadFeeStatus(user.id);
 
     // Hide loading
     document.getElementById('loading').style.display = 'none';
