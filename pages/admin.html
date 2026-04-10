@@ -437,7 +437,6 @@
       var ownerPayment = allPayments.find(function(p) { return p.user_id === s.owner_id; });
       return Object.assign({}, s, { owner_email: ownerPayment ? ownerPayment.email : '' });
     });
-    allPayments = paymentsRes.data || [];
 
     renderOverview();
     renderStores();
