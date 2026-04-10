@@ -593,6 +593,7 @@
         <div class="field">
           <label>Stock Quantity *</label>
           <input type="number" id="prod-stock" placeholder="e.g. 10" min="0" />
+<div style="font-size:11px;color:var(--gray);margin-top:6px">If you select sizes above, total stock will be calculated automatically from size quantities.</div>
         </div>
       </div>
 
@@ -830,7 +831,7 @@ const statusBadge = p.status === 'approved'
     document.getElementById('prod-stock').value = p.stock_qty;
     document.getElementById('prod-category').value = p.category || '';
     document.getElementById('prod-desc').value = p.description || '';
-    setSizeFields(p.size_type || '', p.sizes || []);
+    setSizeFields(p.size_type || '', p.sizes || [], p.size_stock || {});
     document.getElementById('modal-msg').className = 'msg';
 
     const previews = document.getElementById('img-previews');
@@ -860,20 +861,28 @@ const statusBadge = p.status === 'approved'
     if (sizeType === 'clothing') {
       var clothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
       checkboxes.innerHTML = clothingSizes.map(function(s) {
-        return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
-          '<input type="checkbox" value="' + s + '" style="accent-color:var(--green)"> ' + s + '</label>';
+        return '<label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
+          '<input type="checkbox" value="' + s + '" style="accent-color:var(--green)" onchange="toggleSizeQty(this)"> ' + s +
+          '<input type="number" min="0" placeholder="qty" data-size="' + s + '" style="width:52px;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--white);font-size:12px;display:none" /></label>';
       }).join('');
       optionsField.style.display = 'block';
     } else if (sizeType === 'footwear') {
       var footSizes = ['4', '5', '6', '7', '8', '9', '10', '11', '12', '13'];
       checkboxes.innerHTML = footSizes.map(function(s) {
-        return '<label style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
-          '<input type="checkbox" value="UK ' + s + '" style="accent-color:var(--green)"> UK ' + s + '</label>';
+        return '<label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px">' +
+          '<input type="checkbox" value="UK ' + s + '" style="accent-color:var(--green)" onchange="toggleSizeQty(this)"> UK ' + s +
+          '<input type="number" min="0" placeholder="qty" data-size="UK ' + s + '" style="width:52px;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--white);font-size:12px;display:none" /></label>';
       }).join('');
       optionsField.style.display = 'block';
     } else if (sizeType === 'custom') {
       customField.style.display = 'block';
     }
+  }
+
+ function toggleSizeQty(checkbox) {
+    var qtyInput = checkbox.parentElement.querySelector('input[type="number"]');
+    if (qtyInput) qtyInput.style.display = checkbox.checked ? 'inline-block' : 'none';
+    if (!checkbox.checked && qtyInput) qtyInput.value = '';
   }
 
   function getSelectedSizes() {
@@ -884,20 +893,38 @@ const statusBadge = p.status === 'approved'
       if (!custom) return null;
       return custom.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
     }
-    var checked = document.querySelectorAll('#size-checkboxes input:checked');
+    var checked = document.querySelectorAll('#size-checkboxes input[type="checkbox"]:checked');
     return Array.from(checked).map(function(c) { return c.value; });
   }
 
-  function setSizeFields(sizeType, sizes) {
+  function getSizeStock() {
+    var sizeType = document.getElementById('prod-size-type').value;
+    if (!sizeType || sizeType === 'custom') return {};
+    var result = {};
+    var checked = document.querySelectorAll('#size-checkboxes input[type="checkbox"]:checked');
+    checked.forEach(function(cb) {
+      var qtyInput = cb.parentElement.querySelector('input[type="number"]');
+      var qty = qtyInput ? parseInt(qtyInput.value) || 0 : 0;
+      result[cb.value] = qty;
+    });
+    return result;
+  }
+
+  function setSizeFields(sizeType, sizes, sizeStock) {
     document.getElementById('prod-size-type').value = sizeType || '';
     updateSizeOptions();
     if (!sizes || sizes.length === 0) return;
     if (sizeType === 'custom') {
       document.getElementById('prod-custom-sizes').value = sizes.join(', ');
     } else {
-      var checkboxes = document.querySelectorAll('#size-checkboxes input');
+      var checkboxes = document.querySelectorAll('#size-checkboxes input[type="checkbox"]');
       checkboxes.forEach(function(cb) {
         cb.checked = sizes.includes(cb.value);
+        var qtyInput = cb.parentElement.querySelector('input[type="number"]');
+        if (cb.checked && qtyInput) {
+          qtyInput.style.display = 'inline-block';
+          qtyInput.value = sizeStock && sizeStock[cb.value] ? sizeStock[cb.value] : '';
+        }
       });
     }
   }
@@ -959,21 +986,29 @@ const statusBadge = p.status === 'approved'
     btn.disabled = true;
     btn.textContent = 'Saving...';
 
-    var sizeType = document.getElementById('prod-size-type').value;
+   var sizeType = document.getElementById('prod-size-type').value;
     var sizes = getSelectedSizes();
+    var sizeStock = getSizeStock();
+
+    // If sizes with quantities, auto-calculate total stock from size quantities
+    var totalStock = parseInt(stock);
+    if (sizeType && sizeType !== 'custom' && Object.keys(sizeStock).length > 0) {
+      totalStock = Object.values(sizeStock).reduce(function(sum, qty) { return sum + qty; }, 0);
+    }
 
     const productData = {
       store_id: currentStore.id,
       name,
       price: parseFloat(price),
-      stock_qty: parseInt(stock),
+      stock_qty: totalStock,
       category: category || null,
       description: desc || null,
       image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
-      is_available: parseInt(stock) > 0,
+      is_available: totalStock > 0,
       status: 'pending',
       size_type: sizeType || null,
       sizes: sizes && sizes.length > 0 ? sizes : null,
+      size_stock: Object.keys(sizeStock).length > 0 ? sizeStock : null,
     };
 
     let error;

@@ -711,13 +711,21 @@
       addBtn2.parentNode.insertBefore(sizeDiv, addBtn2);
       sizeContainer = sizeDiv;
     }
-    window._selectedSize = null;
+   window._selectedSize = null;
     if (selectedProduct.sizes && selectedProduct.sizes.length > 0) {
+      var sizeStock = selectedProduct.size_stock || {};
+      var hasSizeStock = Object.keys(sizeStock).length > 0;
       sizeContainer.innerHTML =
         '<div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px">Select Size</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px" id="pm-size-btns">' +
         selectedProduct.sizes.map(function(s) {
-          return '<button onclick="selectSize(\'' + s + '\')" id="size-btn-' + s.replace(/\s/g,'_') + '" style="padding:8px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;cursor:pointer">' + s + '</button>';
+          var qty = hasSizeStock ? (sizeStock[s] || 0) : null;
+          var outOfStock = hasSizeStock && qty === 0;
+          var qtyLabel = hasSizeStock && qty !== null ? ' <span style="font-size:10px;opacity:0.6">(' + qty + ')</span>' : '';
+          if (outOfStock) {
+            return '<button disabled id="size-btn-' + s.replace(/\s/g,'_') + '" style="padding:8px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:rgba(255,255,255,0.2);font-size:13px;cursor:not-allowed;text-decoration:line-through">' + s + ' <span style="font-size:10px">(0)</span></button>';
+          }
+          return '<button onclick="selectSize(\'' + s + '\')" id="size-btn-' + s.replace(/\s/g,'_') + '" style="padding:8px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:13px;cursor:pointer">' + s + qtyLabel + '</button>';
         }).join('') +
         '</div><div id="size-error" style="font-size:12px;color:var(--danger);margin-top:8px;display:none">Please select a size</div>';
     } else {
@@ -914,16 +922,31 @@ async function placeOrder() {
       el.className = 'msg error';
       return;
     }
-    // Check stock availability before placing order
+   // Check stock availability before placing order
     for (const item of cart) {
       const { data: freshProduct } = await _supabase
         .from('products')
-        .select('stock_qty, name')
+        .select('stock_qty, name, size_stock')
         .eq('id', item.id)
         .single();
-      if (!freshProduct || item.qty > freshProduct.stock_qty) {
+      if (!freshProduct) {
         const el = document.getElementById('checkout-msg');
-        el.textContent = `Sorry, only ${freshProduct ? freshProduct.stock_qty : 0} unit(s) of "${item.name}" are available.`;
+        el.textContent = `"${item.name}" is no longer available.`;
+        el.className = 'msg error';
+        return;
+      }
+      // Check per-size stock if size was selected and size_stock exists
+      if (item.selectedSize && freshProduct.size_stock && freshProduct.size_stock[item.selectedSize] !== undefined) {
+        var availableForSize = freshProduct.size_stock[item.selectedSize];
+        if (item.qty > availableForSize) {
+          const el = document.getElementById('checkout-msg');
+          el.textContent = `Sorry, only ${availableForSize} unit(s) of "${item.name}" in size ${item.selectedSize} are available.`;
+          el.className = 'msg error';
+          return;
+        }
+      } else if (item.qty > freshProduct.stock_qty) {
+        const el = document.getElementById('checkout-msg');
+        el.textContent = `Sorry, only ${freshProduct.stock_qty} unit(s) of "${item.name}" are available.`;
         el.className = 'msg error';
         return;
       }
@@ -979,13 +1002,33 @@ async function placeOrder() {
     el.textContent = '✓ Order placed successfully! The store will confirm shortly.';
     el.className = 'msg success';
 
-    // Decrement stock for each item
+   // Decrement stock for each item
     for (const item of cart) {
-      const newStock = Math.max(0, item.stock_qty - item.qty);
-      await _supabase.from('products').update({
-        stock_qty: newStock,
-        is_available: newStock > 0
-      }).eq('id', item.id);
+      const { data: freshProduct } = await _supabase
+        .from('products')
+        .select('stock_qty, size_stock')
+        .eq('id', item.id)
+        .single();
+      if (!freshProduct) continue;
+
+      var updateData = {};
+
+      // Update per-size stock if applicable
+      if (item.selectedSize && freshProduct.size_stock && freshProduct.size_stock[item.selectedSize] !== undefined) {
+        var updatedSizeStock = Object.assign({}, freshProduct.size_stock);
+        updatedSizeStock[item.selectedSize] = Math.max(0, updatedSizeStock[item.selectedSize] - item.qty);
+        // Recalculate total stock from all sizes
+        var newTotalStock = Object.values(updatedSizeStock).reduce(function(sum, q) { return sum + q; }, 0);
+        updateData.size_stock = updatedSizeStock;
+        updateData.stock_qty = newTotalStock;
+        updateData.is_available = newTotalStock > 0;
+      } else {
+        var newStock = Math.max(0, freshProduct.stock_qty - item.qty);
+        updateData.stock_qty = newStock;
+        updateData.is_available = newStock > 0;
+      }
+
+      await _supabase.from('products').update(updateData).eq('id', item.id);
     }
 
     cart = [];
