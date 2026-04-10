@@ -645,33 +645,101 @@
   }
 
   function renderPayments() {
-  document.getElementById('payments-count').textContent = allPayments.length + ' payments';
-  var container = document.getElementById('payments-container');
-  if (allPayments.length === 0) { container.innerHTML = '<div class="empty-state">No payments yet</div>'; return; }
+    var container = document.getElementById('payments-container');
 
-  var rows = allPayments.map(function(p) {
-    var approveBtn = p.status !== 'approved'
-      ? '<button class="action-btn activate" onclick="approvePayment(\'' + p.id + '\')">Approve</button>'
-      : '';
-    var rejectBtn = p.status !== 'rejected'
-      ? '<button class="action-btn deactivate" onclick="rejectPayment(\'' + p.id + '\')">Reject</button>'
-      : '';
-    var screenshot = p.screenshot_url
-      ? '<a href="' + p.screenshot_url + '" target="_blank" style="color:var(--green);font-size:12px">View Screenshot</a>'
-      : '—';
-    return '<tr>' +
-      '<td><div class="store-name-cell">' + (p.full_name || '—') + '</div><div style="font-size:12px;color:var(--gray)">' + (p.email || '—') + '</div></td>' +
-      '<td><span class="mono">' + (p.trx_id || '—') + '</span></td>' +
-      '<td>' + screenshot + '</td>' +
-      '<td style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--green)">PKR ' + Number(p.amount).toLocaleString('en-PK') + '</td>' +
-      '<td><span class="status-badge ' + p.status + '">' + p.status + '</span></td>' +
-      '<td style="font-size:12px;color:var(--gray)">' + new Date(p.created_at).toLocaleDateString('en-PK') + '</td>' +
-      '<td style="display:flex;gap:6px">' + approveBtn + rejectBtn + '</td>' +
-      '</tr>';
-  }).join('');
+    // Build store-centric view
+    // For each store, find their payments
+    var storeRows = allStores.map(function(s) {
+      // Get all payments for this store owner
+      var ownerPayments = allPayments.filter(function(p) { return p.user_id === s.owner_id; });
 
-  container.innerHTML = '<table class="data-table"><thead><tr><th>Store Owner</th><th>TRX ID</th><th>Screenshot</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>' + rows + '</tbody></table>';
-}
+      // Latest payment overall
+      var latestPayment = ownerPayments.length > 0 ? ownerPayments[0] : null;
+
+      // Latest approved payment
+      var approvedPayments = ownerPayments.filter(function(p) { return p.status === 'approved'; });
+      var lastApproved = approvedPayments.length > 0 ? approvedPayments[0] : null;
+
+      // Pending payment
+      var pendingPayment = ownerPayments.find(function(p) { return p.status === 'pending'; });
+
+      // Calculate fee status
+      var feeStatus, feeColor, daysSince = null;
+      if (pendingPayment) {
+        feeStatus = '⏳ Pending Review';
+        feeColor = '#FFB300';
+      } else if (!lastApproved) {
+        feeStatus = 'No Payment Yet';
+        feeColor = 'var(--danger)';
+      } else {
+        daysSince = Math.floor((new Date() - new Date(lastApproved.created_at)) / (1000 * 60 * 60 * 24));
+        if (daysSince <= 30) { feeStatus = '✓ Paid (' + daysSince + 'd ago)'; feeColor = 'var(--green)'; }
+        else if (daysSince <= 37) { feeStatus = '⚠ Due Soon (' + daysSince + 'd ago)'; feeColor = '#FFB300'; }
+        else { feeStatus = '✕ Overdue (' + daysSince + 'd ago)'; feeColor = 'var(--danger)'; }
+      }
+
+      // Action buttons — only show if there's a pending payment
+      var actionBtns = pendingPayment
+        ? '<button class="action-btn activate" onclick="approvePayment(\'' + pendingPayment.id + '\')">Approve</button>' +
+          '<button class="action-btn deactivate" onclick="rejectPayment(\'' + pendingPayment.id + '\')">Reject</button>'
+        : '—';
+
+      // Screenshot — show latest payment screenshot
+      var activePayment = pendingPayment || latestPayment;
+      var screenshot = activePayment && activePayment.screenshot_url
+        ? '<a href="' + activePayment.screenshot_url + '" target="_blank" style="color:var(--green);font-size:12px">View Screenshot</a>'
+        : '—';
+
+      var trxId = activePayment ? activePayment.trx_id : '—';
+      var amount = activePayment ? 'PKR ' + Number(activePayment.amount).toLocaleString('en-PK') : '—';
+      var paymentType = activePayment
+        ? (activePayment.payment_type === 'monthly'
+          ? '<span style="background:rgba(41,121,255,0.12);color:#2979FF;font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px">MONTHLY</span>'
+          : '<span style="background:rgba(0,230,118,0.1);color:var(--green);font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px">INITIAL</span>')
+        : '—';
+
+      return '<tr>' +
+        '<td><div class="store-name-cell">' + (s.name || '—') + '</div><div style="font-size:11px;color:var(--gray)">' + (s.owner_email || '') + '</div></td>' +
+        '<td>' + paymentType + '</td>' +
+        '<td><span class="mono" style="font-size:12px">' + (trxId || '—') + '</span></td>' +
+        '<td>' + screenshot + '</td>' +
+        '<td style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--green)">' + amount + '</td>' +
+        '<td><span style="color:' + feeColor + ';font-size:12px;font-weight:600">' + feeStatus + '</span></td>' +
+        '<td style="display:flex;gap:6px;align-items:center">' + actionBtns + '</td>' +
+        '</tr>';
+    });
+
+    // Also show any payments from users who don't have a store yet (initial pending payments)
+    var noStorePayments = allPayments.filter(function(p) {
+      return p.status === 'pending' && !allStores.find(function(s) { return s.owner_id === p.user_id; });
+    });
+
+    var noStoreRows = noStorePayments.map(function(p) {
+      var screenshot = p.screenshot_url
+        ? '<a href="' + p.screenshot_url + '" target="_blank" style="color:var(--green);font-size:12px">View Screenshot</a>'
+        : '—';
+      return '<tr>' +
+        '<td><div class="store-name-cell" style="color:#FFB300">No store yet</div><div style="font-size:11px;color:var(--gray)">' + (p.email || '') + '</div></td>' +
+        '<td><span style="background:rgba(0,230,118,0.1);color:var(--green);font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px">INITIAL</span></td>' +
+        '<td><span class="mono" style="font-size:12px">' + (p.trx_id || '—') + '</span></td>' +
+        '<td>' + screenshot + '</td>' +
+        '<td style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--green)">PKR ' + Number(p.amount).toLocaleString('en-PK') + '</td>' +
+        '<td><span style="color:#FFB300;font-size:12px;font-weight:600">⏳ Pending Review</span></td>' +
+        '<td style="display:flex;gap:6px"><button class="action-btn activate" onclick="approvePayment(\'' + p.id + '\')">Approve</button><button class="action-btn deactivate" onclick="rejectPayment(\'' + p.id + '\')">Reject</button></td>' +
+        '</tr>';
+    });
+
+    var allRows = storeRows.concat(noStoreRows).join('');
+    var total = allStores.length + noStorePayments.length;
+    document.getElementById('payments-count').textContent = total + ' stores';
+
+    if (allRows === '') {
+      container.innerHTML = '<div class="empty-state">No stores or payments yet</div>';
+      return;
+    }
+
+    container.innerHTML = '<table class="data-table"><thead><tr><th>Store</th><th>Type</th><th>TRX ID</th><th>Screenshot</th><th>Amount</th><th>Fee Status</th><th>Action</th></tr></thead><tbody>' + allRows + '</tbody></table>';
+  }
 
 async function approvePayment(id) {
   if (!confirm('Approve this payment?')) return;
