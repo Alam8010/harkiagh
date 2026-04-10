@@ -211,9 +211,10 @@
   async function loadData() {
     const { data: products } = await _supabase
       .from('products')
-      .select('*, stores(id, name, logo_url, slug)')
+      .select('*, stores!inner(id, name, logo_url, slug)')
       .eq('is_available', true)
       .eq('status', 'approved')
+      .eq('stores.is_active', true)
       .order('created_at', { ascending: false });
 
     allProducts = products || [];
