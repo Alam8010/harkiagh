@@ -996,6 +996,15 @@ const statusBadge = p.status === 'approved'
       totalStock = Object.values(sizeStock).reduce(function(sum, qty) { return sum + qty; }, 0);
     }
 
+   // Check if any new images were uploaded during edit
+    var originalImages = editingProductId
+      ? (allProducts.find(function(p) { return p.id === editingProductId; }) || {}).image_urls || []
+      : [];
+    var newImagesUploaded = uploadedImageUrls.some(function(url) {
+      return !originalImages.includes(url);
+    });
+    var newStatus = (!editingProductId || newImagesUploaded) ? 'pending' : 'approved';
+
     const productData = {
       store_id: currentStore.id,
       name,
@@ -1005,7 +1014,7 @@ const statusBadge = p.status === 'approved'
       description: desc || null,
       image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
       is_available: totalStock > 0,
-      status: 'pending',
+      status: newStatus,
       size_type: sizeType || null,
       sizes: sizes && sizes.length > 0 ? sizes : null,
       size_stock: Object.keys(sizeStock).length > 0 ? sizeStock : null,
