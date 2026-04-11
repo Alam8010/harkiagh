@@ -397,7 +397,7 @@
   const email = document.getElementById('login-email').value.trim();
   if (!email) { showMsg('Please enter your email first.', 'error'); return; }
   const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://Alam08-S.github.io/ts/pages/reset-password.html'
+    redirectTo: 'https://sabhai.store/pages/reset-password.html'
   });
   if (error) { showMsg(error.message, 'error'); return; }
   showMsg('Password reset email sent! Check your inbox.', 'success');
