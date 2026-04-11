@@ -746,7 +746,18 @@ async function approvePayment(id) {
   const { data: payment } = await _supabase.from('subscription_payments').select('*').eq('id', id).single();
   await _supabase.from('subscription_payments').update({ status: 'approved' }).eq('id', id);
   if (payment) {
-    await _supabase.from('stores').update({ is_active: true }).eq('owner_id', payment.user_id);
+    const { data: existingStore } = await _supabase.from('stores').select('id').eq('owner_id', payment.user_id).single();
+    if (existingStore) {
+      await _supabase.from('stores').update({ is_active: true }).eq('owner_id', payment.user_id);
+    } else {
+      await _supabase.from('stores').insert({
+        owner_id: payment.user_id,
+        owner_email: payment.email,
+        name: payment.full_name + "'s Store",
+        is_active: true,
+        status: 'active'
+      });
+    }
   }
   await loadAllData();
 }
