@@ -316,11 +316,27 @@
       return;
     }
 
-    const { data: orders } = await _supabase
+    const phone = currentCustomer?.phone || null;
+
+    const { data: ordersByAccount } = await _supabase
       .from('orders')
       .select('*, stores(name)')
       .eq('customer_id', currentCustomer.id)
       .order('created_at', { ascending: false });
+
+    const { data: ordersByPhone } = phone ? await _supabase
+      .from('orders')
+      .select('*, stores(name)')
+      .eq('guest_phone', phone)
+      .is('customer_id', null)
+      .order('created_at', { ascending: false }) : { data: [] };
+
+    const seen = new Set();
+    const orders = [...(ordersByAccount || []), ...(ordersByPhone || [])].filter(o => {
+      if (seen.has(o.id)) return false;
+      seen.add(o.id);
+      return true;
+    }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const activeContainer = document.getElementById('active-orders-list');
     const historyContainer = document.getElementById('orders-list');
