@@ -970,7 +970,7 @@ async function placeOrder() {
       total_amount: total + 300,
       delivery_address: address,
       delivery_note: note || null
-    }).select().single();
+    }).select('id').single();
 
     if (error) {
       const el = document.getElementById('checkout-msg');
