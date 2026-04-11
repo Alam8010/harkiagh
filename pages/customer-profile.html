@@ -130,6 +130,7 @@
   </a>
   <div class="nav-right">
     <a class="nav-btn outline" href="stores.html">Browse Stores</a>
+    <a class="nav-btn outline" href="#active-orders">My Orders</a>
     <button class="nav-btn danger" onclick="handleLogout()">Sign Out</button>
   </div>
 </nav>
@@ -187,8 +188,16 @@
     <div class="profile-card-header">
       <div class="profile-card-icon"><svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></div>
       <div>
+        <div class="profile-card-title" id="active-orders">Active Orders</div>
+        <div class="profile-card-sub">Orders currently in progress</div>
+      <div class="orders-list" id="active-orders-list">
+        <div class="empty-orders">Loading...</div>
+      </div>
+      </div></div>
+      <div class="profile-card" style="margin-top:20px">
+      <div class="profile-card-header" style="padding:18px 24px;border-bottom:1px solid var(--border)">
         <div class="profile-card-title">Order History</div>
-        <div class="profile-card-sub">Your recent orders across all stores</div>
+        <div class="profile-card-sub">All your past orders</div>
       </div>
     </div>
     <div class="profile-card-body">
@@ -303,6 +312,7 @@
   async function loadOrders() {
     if (!currentCustomer) {
       document.getElementById('orders-list').innerHTML = '<div class="empty-orders">No orders yet. Start shopping!</div>';
+      document.getElementById('active-orders-list').innerHTML = '<div class="empty-orders">No active orders.</div>';
       return;
     }
 
@@ -312,14 +322,19 @@
       .eq('customer_id', currentCustomer.id)
       .order('created_at', { ascending: false });
 
-    const container = document.getElementById('orders-list');
+    const activeContainer = document.getElementById('active-orders-list');
+    const historyContainer = document.getElementById('orders-list');
 
     if (!orders || orders.length === 0) {
-      container.innerHTML = '<div class="empty-orders">No orders yet. Start shopping!</div>';
+      activeContainer.innerHTML = '<div class="empty-orders">No active orders.</div>';
+      historyContainer.innerHTML = '<div class="empty-orders">No orders yet. Start shopping!</div>';
       return;
     }
 
-    container.innerHTML = orders.map(o => `
+    const activeOrders = orders.filter(o => ['pending','confirmed','dispatched'].includes(o.status));
+    const historyOrders = orders.filter(o => ['delivered','cancelled'].includes(o.status));
+
+    const renderOrder = (o) => `
       <div class="order-row">
         <div>
           <div class="order-store">${o.stores?.name || 'Store'}</div>
@@ -329,8 +344,23 @@
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <div class="order-amount">PKR ${Number(o.total_amount).toLocaleString('en-PK')}</div>
           <span class="status-badge ${o.status}">${o.status}</span>
+          ${(o.status === 'pending' || o.status === 'confirmed') ? `<button onclick="cancelOrder('${o.id}')" style="padding:6px 14px;background:transparent;border:1px solid rgba(255,59,59,0.4);color:#ff3b3b;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">CANCEL</button>` : ''}
         </div>
-      </div>`).join('');
+      </div>`;
+
+    activeContainer.innerHTML = activeOrders.length ? activeOrders.map(renderOrder).join('') : '<div class="empty-orders">No active orders.</div>';
+    historyContainer.innerHTML = historyOrders.length ? historyOrders.map(renderOrder).join('') : '<div class="empty-orders">No completed orders yet.</div>';
+  }
+
+  async function cancelOrder(orderId) {
+    const confirmed = confirm('Are you sure you want to cancel this order?');
+    if (!confirmed) return;
+    const { error } = await _supabase
+      .from('orders')
+      .update({ status: 'cancelled' })
+      .eq('id', orderId);
+    if (error) { alert('Failed to cancel order. Please try again.'); return; }
+    await loadOrders();
   }
 
   async function deleteAccount() {
