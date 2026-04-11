@@ -555,9 +555,13 @@
     }
 
     // Highlight current status button
+    const isCancelled = order.status === 'cancelled';
     document.querySelectorAll('.status-btn').forEach(btn => {
       btn.classList.toggle('current', btn.classList.contains(order.status));
+      btn.style.display = isCancelled ? 'none' : '';
     });
+    document.getElementById('delivery-date').style.display = isCancelled ? 'none' : '';
+    document.querySelector('.update-btn').style.display = isCancelled ? 'none' : '';
 
     // Load order items
     const { data: items } = await _supabase
@@ -595,6 +599,18 @@
 
   async function saveStatusUpdate() {
     if (!selectedOrderId || !selectedStatus) return;
+
+    const { data: currentOrder } = await _supabase
+      .from('orders')
+      .select('status')
+      .eq('id', selectedOrderId)
+      .single();
+
+    if (currentOrder?.status === 'cancelled') {
+      alert('This order has been cancelled by the customer and cannot be updated.');
+      closeModal();
+      return;
+    }
 
     const deliveryDate = document.getElementById('delivery-date').value;
 
