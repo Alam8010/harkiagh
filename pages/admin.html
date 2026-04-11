@@ -743,7 +743,11 @@
 
 async function approvePayment(id) {
   if (!confirm('Approve this payment?')) return;
+  const { data: payment } = await _supabase.from('subscription_payments').select('*').eq('id', id).single();
   await _supabase.from('subscription_payments').update({ status: 'approved' }).eq('id', id);
+  if (payment) {
+    await _supabase.from('stores').update({ is_active: true }).eq('owner_id', payment.user_id);
+  }
   await loadAllData();
 }
 
