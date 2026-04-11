@@ -400,7 +400,7 @@
     redirectTo: 'https://sabhai.store/pages/reset-password.html'
   });
   if (error) { showMsg(error.message, 'error'); return; }
-  showMsg('Password reset email sent! Check your inbox.', 'success');
+  showMsg('Password reset email sent! Check your inbox and spam/junk folder if you don\'t see it.', 'success');
 }
   const { createClient } = supabase;
   const _supabase = createClient(
