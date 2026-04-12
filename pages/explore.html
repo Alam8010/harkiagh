@@ -407,6 +407,13 @@
 
   init();
   document.getElementById('search-input').value = '';
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('search-input').value = '';
+      filterProducts();
+    }, 300);
+  });
+</script>
 </script>
 </body>
 </html>
