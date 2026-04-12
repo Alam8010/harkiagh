@@ -380,10 +380,21 @@
   }
 
   async function deleteAccount() {
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: store } = await _supabase.from('stores').select('id').eq('owner_id', user.id).single();
+    if (store) {
+      alert('You cannot delete this account because it is linked to a store. Please contact support if you want to close your store.');
+      return;
+    }
+
     const confirmed = confirm('Are you sure you want to delete your account? All your order history will be lost.');
     if (!confirmed) return;
+
+    await _supabase.from('customers').delete().eq('user_id', user.id);
     await _supabase.auth.signOut();
-    window.location.href = 'stores.html';
+    window.location.href = '../index.html';
   }
 
   function showMsg(id, text, type) {
