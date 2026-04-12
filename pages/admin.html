@@ -618,8 +618,16 @@
         if (allStores[i].id === p.store_id) { store = allStores[i]; break; }
       }
       var storeName = store ? store.name : 'Unknown store';
-      var imgHtml = img
-        ? '<img class="product-mod-img" src="' + img + '" />'
+      var allImgs = p.image_urls && p.image_urls.length > 0 ? p.image_urls : [];
+      var imgHtml = allImgs.length > 0
+        ? '<img class="product-mod-img" id="main-img-' + p.id + '" src="' + allImgs[0] + '" />' +
+          (allImgs.length > 1
+            ? '<div style="display:flex;gap:6px;padding:8px;overflow-x:auto;background:rgba(0,0,0,0.3)">' +
+              allImgs.map(function(url, idx) {
+                return '<img src="' + url + '" onclick="document.getElementById(\'main-img-' + p.id + '\').src=\'' + url + '\'" style="width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid ' + (idx === 0 ? 'var(--green)' : 'transparent') + ';flex-shrink:0" />';
+              }).join('')
+            + '</div>'
+            : '')
         : '<div class="product-mod-placeholder">No image</div>';
 
       var approveBtn = p.status !== 'approved'
