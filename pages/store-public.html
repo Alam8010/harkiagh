@@ -301,8 +301,8 @@
     <a href="customer-profile.html#active-orders" id="mob-orders" style="display:none">My Orders</a>
     <a href="customer-profile.html" id="mob-profile" style="display:none">My Profile</a>
     <button class="danger" id="mob-signout" style="display:none" onclick="handleLogout()">Sign Out</button>
-    <button id="mob-login" style="display:none" onclick="closeMobMenu();openAuthModal('login')">Login</button>
-    <button id="mob-signup" style="display:none" onclick="closeMobMenu();openAuthModal('signup')">Sign Up</button>
+    <button id="mob-login" style="display:block" onclick="closeMobMenu();openAuthModal('login')">Login</button>
+    <button id="mob-signup" style="display:block" onclick="closeMobMenu();openAuthModal('signup')">Sign Up</button>
   </div>
   <a class="nav-logo" href="#">
     <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg></div>
@@ -831,7 +831,13 @@
     const { data: { session } } = await _supabase.auth.getSession();
     if (session) {
       currentUser = session.user;
-      const { data: customer } = await _supabase.from('customers').select('*').eq('user_id', currentUser.id).single();
+      let { data: customer } = await _supabase.from('customers').select('*').eq('user_id', currentUser.id).single();
+      if (!customer) {
+        const name = currentUser.user_metadata?.full_name || '';
+        await _supabase.from('customers').insert({ user_id: currentUser.id, full_name: name, phone: null, address: null });
+        const { data: newCustomer } = await _supabase.from('customers').select('*').eq('user_id', currentUser.id).single();
+        customer = newCustomer;
+      }
       currentCustomer = customer;
       document.getElementById('nav-auth').style.display = 'none';
       document.getElementById('nav-user').style.display = 'flex';
@@ -894,20 +900,9 @@ console.log('login result:', data, error);
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
 
       if (data.user) {
-  const { error: customerError } = await _supabase.from('customers').insert({ 
-    user_id: data.user.id, 
-    full_name: name, 
-    phone: phone || null, 
-    address: address || null 
-  });
-  if (customerError) {
-    showAuthMsg('Account created but profile failed: ' + customerError.message, 'error');
-  } else {
-    showAuthMsg('Account created! You can now place orders.', 'success');
-    await checkAuth();
-    setTimeout(() => closeModal('auth-modal'), 1500);
-  }
-}
+        showAuthMsg('Account created! Please check your email to confirm, then login.', 'success');
+        setTimeout(() => openAuthModal('login'), 2000);
+      }
     }
     btn.disabled = false;
   }
