@@ -1007,8 +1007,17 @@ async function placeOrder() {
     }
 
     const el = document.getElementById('checkout-msg');
-    el.textContent = '✓ Order placed successfully! The store will confirm shortly.';
     el.className = 'msg success';
+    if (!currentUser) {
+      el.innerHTML = '✓ Order placed successfully! The store will contact you shortly.' +
+        '<div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:10px">Want to track or cancel your order?</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button onclick="openAuthModal(\'login\')" style="flex:1;padding:10px;background:var(--green);color:var(--dark);border:none;border-radius:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer">LOGIN / SIGN UP</button>' +
+        '<button onclick="closeModal(\'checkout-modal\')" style="flex:1;padding:10px;background:transparent;color:var(--gray);border:1px solid var(--border);border-radius:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer">CONTINUE AS GUEST</button>' +
+        '</div>';
+    } else {
+      el.textContent = '✓ Order placed successfully! The store will confirm shortly.';
+    }
 
    // Decrement stock for each item
     for (const item of cart) {
@@ -1043,7 +1052,9 @@ async function placeOrder() {
     updateCartUI();
     await loadProducts();
 
-    setTimeout(() => closeModal('checkout-modal'), 2500);
+    if (currentUser) {
+      setTimeout(() => closeModal('checkout-modal'), 2500);
+    }
     btn.disabled = false;
     btn.textContent = 'Place Order';
   }
