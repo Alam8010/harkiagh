@@ -61,10 +61,9 @@
     @media (max-width: 640px) {
       #nav-user { display: none !important; }
       #nav-auth { display: none !important; }
-      .nav-btn.outline[href="explore.html"] { display: none !important; }
+      .nav-right > .nav-btn { display: none !important; }
       .hamburger-btn { display: block !important; }
     }
-
     .nav-btn {
       padding: 8px 16px; border-radius: 8px;
       font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 500;
@@ -894,20 +893,9 @@ console.log('login result:', data, error);
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
 
       if (data.user) {
-  const { error: customerError } = await _supabase.from('customers').insert({ 
-    user_id: data.user.id, 
-    full_name: name, 
-    phone: phone || null, 
-    address: address || null 
-  });
-  if (customerError) {
-    showAuthMsg('Account created but profile failed: ' + customerError.message, 'error');
-  } else {
-    showAuthMsg('Account created! You can now place orders.', 'success');
-    await checkAuth();
-    setTimeout(() => closeModal('auth-modal'), 1500);
-  }
-}
+        showAuthMsg('Account created! Please check your email to confirm, then login.', 'success');
+        setTimeout(() => openAuthModal('login'), 2000);
+      }
     }
     btn.disabled = false;
   }
