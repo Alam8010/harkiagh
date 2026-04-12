@@ -366,6 +366,10 @@
       <div class="modal-title" id="auth-modal-title">Login</div>
       <div class="modal-close" onclick="closeModal('auth-modal')">×</div>
     </div>
+    <div style="display:flex;border-bottom:1px solid var(--border)">
+      <button onclick="openAuthModal('login')" id="tab-login" style="flex:1;padding:12px;background:transparent;border:none;color:var(--green);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;border-bottom:2px solid var(--green)">LOGIN</button>
+      <button onclick="openAuthModal('signup')" id="tab-signup" style="flex:1;padding:12px;background:transparent;border:none;color:var(--gray);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;border-bottom:2px solid transparent">SIGN UP</button>
+    </div>
     <div class="modal-body">
       <div class="msg" id="auth-msg"></div>
       <div id="login-fields">
@@ -394,7 +398,7 @@
 
 <!-- CHECKOUT MODAL -->
 <!-- PRE-ORDER LOGIN PROMPT -->
-<div class="modal-overlay" id="preorder-modal" style="z-index:400">
+<div class="modal-overlay" id="preorder-modal" style="z-index:500">
   <div class="modal" style="max-width:360px;text-align:center">
     <div class="modal-body" style="padding:32px 24px">
       <div style="width:56px;height:56px;background:rgba(0,230,118,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
@@ -819,6 +823,12 @@ updateCartUI();
     document.getElementById('login-fields').style.display = mode === 'login' ? 'block' : 'none';
     document.getElementById('signup-fields').style.display = mode === 'signup' ? 'block' : 'none';
     document.getElementById('auth-msg').className = 'msg';
+    if (document.getElementById('tab-login')) {
+      document.getElementById('tab-login').style.color = mode === 'login' ? 'var(--green)' : 'var(--gray)';
+      document.getElementById('tab-login').style.borderBottom = mode === 'login' ? '2px solid var(--green)' : '2px solid transparent';
+      document.getElementById('tab-signup').style.color = mode === 'signup' ? 'var(--green)' : 'var(--gray)';
+      document.getElementById('tab-signup').style.borderBottom = mode === 'signup' ? '2px solid var(--green)' : '2px solid transparent';
+    }
     document.getElementById('auth-modal').classList.add('open');
   }
 
@@ -923,6 +933,7 @@ async function handleLogout() {
 
 async function preorderLogin() {
   closeModal('preorder-modal');
+  closeModal('checkout-modal');
   setTimeout(() => openAuthModal('login'), 300);
 }
 
