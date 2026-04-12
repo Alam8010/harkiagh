@@ -254,7 +254,8 @@
     <!-- Danger Zone -->
     <div class="danger-zone">
       <div class="danger-zone-title">Danger Zone</div>
-      <div class="danger-zone-sub">To delete your account and all associated store data, products and orders, please contact us at akashaaalm1017@gmail.com This action cannot be undone.</div>
+      <div class="danger-zone-sub">Deleting your account will permanently remove all your store data, products and orders. This action cannot be undone.</div>
+      <button class="danger-btn" onclick="deleteAccount()">Delete My Account</button>
     </div>
 
   </div>
@@ -348,10 +349,16 @@
     const doubleConfirm = confirm('Last warning — are you sure you want to delete everything?');
     if (!doubleConfirm) return;
 
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) return;
+
+    await _supabase.from('products').delete().eq('store_id', currentStore?.id);
+    await _supabase.from('stores').delete().eq('owner_id', user.id);
+    await _supabase.from('subscription_payments').delete().eq('user_id', user.id);
     await _supabase.auth.signOut();
     window.location.href = '../index.html';
   }
-
+  
   function showMsg(id, text, type) {
     const el = document.getElementById(id);
     el.textContent = text;
