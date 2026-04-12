@@ -270,7 +270,7 @@
 
     const cardsHtml = pageItems.map(p => {
       const store = p.stores;
-      const storeUrl = store ? `store-public.html?store=${store.slug}` : '#';
+      const storeUrl = store ? `store-public.html?store=${store.slug}&product=${p.id}` : '#';
       const inStock = p.is_available && p.stock_qty > 0;
       return `
         <div class="product-card ${!inStock ? 'out-of-stock' : ''}" onclick="window.location.href='${storeUrl}'">

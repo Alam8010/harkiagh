@@ -488,6 +488,11 @@
     await loadProducts();
     await checkAuth();
     document.getElementById('loading').style.display = 'none';
+    const productParam = new URLSearchParams(window.location.search).get('product');
+    if (productParam) {
+      const product = allProducts.find(p => p.id === productParam);
+      if (product) openProductModal(productParam);
+    }
   }
 
   function renderStoreInfo() {
