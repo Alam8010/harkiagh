@@ -387,6 +387,9 @@
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
       await checkAuth();
       closeAuthModal();
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-input').blur();
+      filterProducts();
     } else {
       const name = document.getElementById('auth-name').value.trim();
       const email = document.getElementById('auth-email2').value.trim();
