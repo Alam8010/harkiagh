@@ -220,7 +220,21 @@
       .eq('stores.is_active', true)
       .order('created_at', { ascending: false });
 
-    allProducts = products || [];
+    const shuffled = products || [];
+    const byStore = {};
+    shuffled.forEach(p => {
+      if (!byStore[p.stores.id]) byStore[p.stores.id] = [];
+      byStore[p.stores.id].push(p);
+    });
+    const storeQueues = Object.values(byStore);
+    const interleaved = [];
+    let i = 0;
+    while (storeQueues.some(q => q.length > 0)) {
+      const queue = storeQueues[i % storeQueues.length];
+      if (queue.length > 0) interleaved.push(queue.shift());
+      i++;
+    }
+    allProducts = interleaved;
     filteredProducts = allProducts;
     buildCategoryPills();
     currentPage = 0;
