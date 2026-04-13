@@ -879,6 +879,12 @@
       const { data, error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
 
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        showAuthMsg('An account with this email already exists. Please login instead.', 'error');
+        setTimeout(() => openAuthModal('login'), 2000);
+        btn.disabled = false; return;
+      }
+
       if (data.user) {
         showAuthMsg('Account created! Please check your email to confirm, then login.', 'success');
         setTimeout(() => openAuthModal('login'), 2000);
