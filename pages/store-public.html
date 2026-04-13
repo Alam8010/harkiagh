@@ -851,10 +851,22 @@
       if (!email || !password) { showAuthMsg('Please fill in all fields.', 'error'); btn.disabled = false; return; }
 
       const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-console.log('login result:', data, error);
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
       await checkAuth();
       closeModal('auth-modal');
+      if (window._pendingOrder) {
+        const p = window._pendingOrder;
+        cart = p.cart;
+        updateCartUI();
+        document.getElementById('guest-name').value = p.name;
+        document.getElementById('guest-phone').value = p.phone;
+        document.getElementById('guest-whatsapp').value = p.whatsapp;
+        document.getElementById('checkout-address').value = p.address;
+        document.getElementById('checkout-note').value = p.note;
+        window._pendingOrder = null;
+        openModal('checkout-modal');
+        setTimeout(() => actuallyPlaceOrder(), 300);
+      }
     } else {
       const name = document.getElementById('auth-name').value.trim();
       const email = document.getElementById('auth-email2').value.trim();
@@ -930,11 +942,18 @@ async function handleLogout() {
   }
 
 async function preorderLogin() {
+  window._pendingOrder = {
+    name: document.getElementById('guest-name').value.trim(),
+    phone: document.getElementById('guest-phone').value.trim(),
+    whatsapp: document.getElementById('guest-whatsapp').value.trim(),
+    address: document.getElementById('checkout-address').value.trim(),
+    note: document.getElementById('checkout-note').value.trim(),
+    cart: JSON.parse(JSON.stringify(cart))
+  };
   closeModal('preorder-modal');
   closeModal('checkout-modal');
   setTimeout(() => openAuthModal('login'), 300);
 }
-
 async function preorderGuest() {
   closeModal('preorder-modal');
   setTimeout(() => actuallyPlaceOrder(), 300);
