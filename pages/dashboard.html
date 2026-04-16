@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Sabhai</title>
+  <meta name="description" content="Manage your Sabhai store — products, orders, and settings." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .mobile-bar {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--dark2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 200;
+}
+
+.mobile-logo { display: flex; align-items: center; gap: 8px; }
+.mobile-logo .logo-icon { width: 28px; height: 28px; background: var(--green); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.mobile-logo .logo-icon svg { width: 16px; height: 16px; fill: var(--dark); }
+.mobile-logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; }
+.mobile-logo-text span { color: var(--green); }
+
+.mobile-menu-btn { background: transparent; border: 1px solid var(--border); color: var(--white); border-radius: 8px; padding: 6px 12px; font-size: 18px; cursor: pointer; }
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 56px; left: 0; right: 0;
+  background: var(--dark2);
+  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  z-index: 199;
+  padding: 8px 0;
+}
+
+.mobile-menu.open { display: flex; }
+
+.mobile-menu a, .mobile-menu button {
+  padding: 14px 20px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Barlow', sans-serif;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+
+.mobile-menu a:hover, .mobile-menu button:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+.mobile-menu button { color: var(--danger); }
+
+@media (max-width: 900px) {
+  .mobile-bar { display: flex; }
+  .main { margin-top: 56px; }
+}
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00E676;
+      --green-dark: #00C853;
+      --dark: #0A0A0A;
+      --dark2: #111111;
+      --dark3: #1A1A1A;
+      --dark4: #222222;
+      --border: rgba(255,255,255,0.07);
+      --gray: #888888;
+      --white: #FFFFFF;
+      --danger: #FF3B3B;
+      --warning: #FFB300;
+      --info: #2979FF;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--dark);
+      color: var(--white);
+      font-family: 'Barlow', sans-serif;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 220px;
+      background: var(--dark2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--green);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-icon svg { width: 18px; height: 18px; fill: var(--dark); }
+
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 2px;
+    }
+
+    .logo-text span { color: var(--green); }
+
+    .nav-section {
+      padding: 20px 12px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0 8px;
+      margin-bottom: 8px;
+      margin-top: 16px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+      color: var(--white);
+    }
+
+    .nav-item.active {
+      background: rgba(0,230,118,0.1);
+      color: var(--green);
+    }
+
+    .nav-item svg {
+      width: 16px; height: 16px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    .sidebar-bottom {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .user-avatar {
+      width: 32px; height: 32px;
+      background: rgba(0,230,118,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: var(--gray);
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 9px 12px;
+      background: transparent;
+      border: 1px solid rgba(255,59,59,0.2);
+      border-radius: 8px;
+      color: rgba(255,59,59,0.7);
+      font-family: 'Barlow', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,59,59,0.08);
+      color: var(--danger);
+      border-color: rgba(255,59,59,0.4);
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      margin-left: 220px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      height: 64px;
+      background: var(--dark2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .page-date {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .store-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray);
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gray);
+    }
+
+    .status-dot.live {
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── PAGE BODY ── */
+    .page-body {
+      padding: 28px 32px;
+      flex: 1;
+    }
+
+    /* ── SETUP BANNER ── */
+    .setup-banner {
+      background: linear-gradient(135deg, rgba(0,230,118,0.08) 0%, rgba(0,230,118,0.03) 100%);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 16px;
+    }
+
+    .setup-banner.hidden { display: none; }
+
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .banner-icon {
+      width: 44px; height: 44px;
+      background: rgba(0,230,118,0.12);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .banner-icon svg { width: 22px; height: 22px; fill: var(--green); }
+
+    .banner-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .banner-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .banner-btn {
+      padding: 10px 20px;
+      background: var(--green);
+      color: var(--dark);
+      border: none;
+      border-radius: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .banner-btn:hover { background: var(--green-dark); }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .stat-card.green::before { background: var(--green); }
+    .stat-card.blue::before { background: var(--info); }
+    .stat-card.warning::before { background: var(--warning); }
+    .stat-card.danger::before { background: var(--danger); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 36px;
+      letter-spacing: 1px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .stat-icon {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .stat-icon svg { width: 16px; height: 16px; }
+    .stat-icon.green { background: rgba(0,230,118,0.1); }
+    .stat-icon.green svg { fill: var(--green); }
+    .stat-icon.blue { background: rgba(41,121,255,0.1); }
+    .stat-icon.blue svg { fill: var(--info); }
+    .stat-icon.warning { background: rgba(255,179,0,0.1); }
+    .stat-icon.warning svg { fill: var(--warning); }
+    .stat-icon.danger { background: rgba(255,59,59,0.1); }
+    .stat-icon.danger svg { fill: var(--danger); }
+
+    /* ── BOTTOM GRID ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+    }
+
+    /* ── SECTION CARD ── */
+    .section-card {
+      background: var(--dark2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .section-link {
+      font-size: 12px;
+      color: var(--green);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* ── ORDERS TABLE ── */
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .orders-table th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .orders-table td {
+      padding: 14px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .orders-table tr:last-child td { border-bottom: none; }
+
+    .order-id {
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.pending { background: rgba(255,179,0,0.1); color: var(--warning); }
+    .status-badge.confirmed { background: rgba(41,121,255,0.1); color: var(--info); }
+    .status-badge.delivered { background: rgba(0,230,118,0.1); color: var(--green); }
+    .status-badge.cancelled { background: rgba(255,59,59,0.1); color: var(--danger); }
+
+    /* Empty state */
+    .empty-state {
+      padding: 48px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+    }
+
+    .empty-icon svg { width: 24px; height: 24px; fill: var(--gray); }
+    .empty-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--gray); }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      color: var(--white);
+    }
+
+    .action-btn:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateX(3px);
+    }
+
+    .action-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-icon svg { width: 18px; height: 18px; }
+    .action-icon.green { background: rgba(0,230,118,0.1); }
+    .action-icon.green svg { fill: var(--green); }
+    .action-icon.blue { background: rgba(41,121,255,0.1); }
+    .action-icon.blue svg { fill: var(--info); }
+    .action-icon.warning { background: rgba(255,179,0,0.1); }
+    .action-icon.warning svg { fill: var(--warning); }
+    .action-icon.purple { background: rgba(170,0,255,0.1); }
+    .action-icon.purple svg { fill: #CC00FF; }
+
+    .action-text { flex: 1; }
+    .action-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .action-sub { font-size: 12px; color: var(--gray); }
+
+    .action-arrow {
+      font-size: 16px;
+      color: var(--gray);
+    }
+
+    /* Loading overlay */
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 13px;
+      color: var(--gray);
+      letter-spacing: 1px;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate { animation: fadeUp 0.4s ease both; }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+    /* ── MONTHLY FEE CARD ── */
+    .fee-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255,179,0,0.2);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .fee-card.paid {
+      border-color: rgba(0,230,118,0.2);
+      background: rgba(0,230,118,0.03);
+    }
+    .fee-card.pending-fee {
+      border-color: rgba(255,179,0,0.25);
+      background: rgba(255,179,0,0.04);
+    }
+    .fee-card-left { display: flex; align-items: center; gap: 14px; }
+    .fee-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255,179,0,0.12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .fee-icon svg { width: 22px; height: 22px; fill: var(--warning); }
+    .fee-icon.green { background: rgba(0,230,118,0.12); }
+    .fee-icon.green svg { fill: var(--green); }
+    .fee-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .fee-sub { font-size: 12px; color: var(--gray); }
+    .fee-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; padding: 6px 14px;
+      border-radius: 100px;
+    }
+    .fee-badge.paid { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+    .fee-badge.pending-fee { background: rgba(255,179,0,0.1); color: var(--warning); border: 1px solid rgba(255,179,0,0.25); }
+    .fee-btn {
+      padding: 9px 20px;
+      background: var(--warning);
+      color: #000;
+      border: none; border-radius: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.15s;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .fee-btn:hover { opacity: 0.88; }
+
+    /* ── FEE MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.75);
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%; max-width: 500px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .modal-close { background: none; border: none; color: var(--gray); font-size: 22px; cursor: pointer; padding: 0 4px; line-height: 1; }
+    .modal-close:hover { color: var(--white); }
+    .modal-body { padding: 24px; }
+    .bank-box {
+      background: rgba(0,230,118,0.05);
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 12px; padding: 16px; margin-bottom: 20px;
+    }
+    .bank-box-title { font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .bank-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .bank-row:last-child { margin-bottom: 0; }
+    .bank-label { font-size: 12px; color: var(--gray); }
+    .bank-value { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .copy-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 5px; color: var(--gray); font-size: 11px;
+      padding: 2px 7px; cursor: pointer; font-family: 'Barlow', sans-serif;
+    }
+    .copy-btn:hover { color: var(--white); }
+    .amount-highlight { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--green); }
+    .mfield { margin-bottom: 16px; }
+    .mfield label { display: block; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 7px; }
+    .mfield input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 11px 14px; font-family: 'Barlow', sans-serif; font-size: 14px; color: var(--white); outline: none; transition: border-color 0.2s; }
+    .mfield input::placeholder { color: rgba(255,255,255,0.2); }
+    .mfield input:focus { border-color: rgba(0,230,118,0.4); }
+    .upload-area {
+      border: 2px dashed rgba(255,255,255,0.1); border-radius: 10px;
+      padding: 22px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .upload-area:hover { border-color: rgba(0,230,118,0.3); }
+    .upload-area.has-file { border-color: rgba(0,230,118,0.4); background: rgba(0,230,118,0.04); }
+    .upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-text { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+    .upload-sub { font-size: 12px; color: var(--gray); }
+    .upload-filename { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 500; }
+    .modal-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none; }
+    .modal-msg.error { background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.2); color: var(--danger); display: block; }
+    .modal-submit {
+      width: 100%; padding: 13px;
+      background: var(--warning); color: #000;
+      border: none; border-radius: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: opacity 0.15s; margin-top: 6px;
+    }
+    .modal-submit:hover { opacity: 0.88; }
+    .modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* pending state inside modal */
+    .modal-pending { text-align: center; padding: 32px 16px; }
+    .modal-pending-icon { width: 60px; height: 60px; background: rgba(255,179,0,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .modal-pending-icon svg { width: 30px; height: 30px; fill: var(--warning); }
+    .modal-pending-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; margin-bottom: 8px; }
+    .modal-pending-sub { font-size: 13px; color: var(--gray); line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<!-- Mobile Top Bar -->
+<div class="mobile-bar">
+  <div class="mobile-logo">
+    <img src="https://res.cloudinary.com/dzpxkndcz/image/upload/v1776111201/sabhai_logo_v5_fvwpcj.svg" style="height:80px;width:auto;" />
+    <span class="mobile-logo-text">SABHAI</span>
+  </div>
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+</div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="dashboard.html">Dashboard</a>
+  <a href="products.html">Products</a>
+  <a href="orders.html">Orders</a>
+  <a href="chat.html">Chat</a>
+  <a href="store-setup.html">Store Setup</a>
+  <button onclick="handleLogout()">Sign Out</button>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading your dashboard...</div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Main</div>
+
+    <a class="nav-item active" href="dashboard.html">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dashboard
+    </a>
+
+    <a class="nav-item" href="products.html">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      Products
+    </a>
+
+    <a class="nav-item" href="orders.html">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Orders
+    </a>
+
+    <a class="nav-item" href="chat.html">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      Chat
+    </a>
+
+    <div class="nav-label">Store</div>
+<a class="nav-item" href="profile.html"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</a>
+    <a class="nav-item" href="store-setup.html">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 10l-9 9z"/></svg>
+      Store Setup
+    </a>
+
+    <a class="nav-item" href="store-public.html" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+      View Store
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div>
+        <div class="user-name" id="user-name">Loading...</div>
+        <div class="user-role">Store Owner</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+      Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">Dashboard</div>
+      <div class="page-date" id="today-date"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="store-status" id="store-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">No Store Yet</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Body -->
+  <div class="page-body">
+
+    <!-- Setup Banner -->
+    <div class="setup-banner animate" id="setup-banner">
+      <div class="banner-left">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div>
+          <div class="banner-title">Complete your store setup</div>
+          <div class="banner-sub">Add your store name, logo and details so customers can find you</div>
+        </div>
+      </div>
+      <a class="banner-btn" href="store-setup.html">Set Up Store →</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card green animate delay-1">
+        <div class="stat-icon green">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        </div>
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value" id="stat-products">0</div>
+        <div class="stat-sub">items in your store</div>
+      </div>
+
+      <div class="stat-card blue animate delay-2">
+        <div class="stat-icon blue">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="stat-orders">0</div>
+        <div class="stat-sub">orders received</div>
+      </div>
+
+      <div class="stat-card warning animate delay-3">
+        <div class="stat-icon warning">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="stat-label">Pending Orders</div>
+        <div class="stat-value" id="stat-pending">0</div>
+        <div class="stat-sub">need your attention</div>
+      </div>
+
+      <div class="stat-card danger animate delay-4">
+        <div class="stat-icon danger">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div class="stat-label">Revenue</div>
+        <div class="stat-value" id="stat-revenue">0</div>
+        <div class="stat-sub">PKR total earned</div>
+      </div>
+    </div>
+
+    <!-- Monthly Fee Card -->
+    <div class="fee-card animate" id="fee-card" style="display:none">
+      <div class="fee-card-left">
+        <div class="fee-icon" id="fee-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <div>
+          <div class="fee-title" id="fee-title">Monthly Store Fee</div>
+          <div class="fee-sub" id="fee-sub">Loading...</div>
+        </div>
+      </div>
+      <button class="fee-btn" id="fee-btn" onclick="openFeeModal()">Pay Store Fee</button>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+
+      <!-- Recent Orders -->
+      <div class="section-card animate">
+        <div class="section-header">
+          <div class="section-title">Recent Orders</div>
+          <a class="section-link" href="orders.html">View all →</a>
+        </div>
+        <div id="orders-container">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <div class="empty-title">No orders yet</div>
+            <div class="empty-sub">Orders will appear here once customers start buying</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="section-card animate">
+        <div class="section-header">
+          <div class="section-title">Quick Actions</div>
+        </div>
+        <div class="quick-actions">
+          <a class="action-btn" href="products.html">
+            <div class="action-icon green">
+              <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </div>
+            <div class="action-text">
+              <div class="action-title">Add Product</div>
+              <div class="action-sub">List a new item in your store</div>
+            </div>
+            <span class="action-arrow">›</span>
+          </a>
+
+          <a class="action-btn" href="orders.html">
+            <div class="action-icon blue">
+              <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <div class="action-text">
+              <div class="action-title">Manage Orders</div>
+              <div class="action-sub">View and update order status</div>
+            </div>
+            <span class="action-arrow">›</span>
+          </a>
+
+          <a class="action-btn" href="chat.html">
+            <div class="action-icon warning">
+              <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            <div class="action-text">
+              <div class="action-title">Customer Chat</div>
+              <div class="action-sub">Reply to customer messages</div>
+            </div>
+            <span class="action-arrow">›</span>
+          </a>
+
+          <a class="action-btn" href="store-setup.html">
+            <div class="action-icon purple">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 10l-9 9z"/></svg>
+            </div>
+            <div class="action-text">
+              <div class="action-title">Store Settings</div>
+              <div class="action-sub">Edit your store profile</div>
+            </div>
+            <span class="action-arrow">›</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── MONTHLY FEE MODAL ── -->
+<div class="modal-overlay" id="fee-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">Pay Monthly Store Fee</div>
+      <button class="modal-close" onclick="closeFeeModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Form view -->
+      <div id="modal-form-view">
+        <!-- Meezan Bank -->
+        <div class="bank-box">
+          <div class="bank-box-title">Meezan Bank</div>
+          <div class="bank-row"><div class="bank-label">Account Title</div><div class="bank-value">Akash Alam</div></div>
+          <div class="bank-row">
+            <div class="bank-label">Account Number</div>
+            <div class="bank-value">00300114582074 <button class="copy-btn" onclick="copyFeeText('00300114582074',this)">Copy</button></div>
+          </div>
+          <div class="bank-row"><div class="bank-label">Amount</div><div class="bank-value"><span class="amount-highlight">PKR 3,000</span></div></div>
+        </div>
+        <!-- NayaPay -->
+        <div class="bank-box" style="border-color:rgba(41,121,255,0.15);background:rgba(41,121,255,0.05);margin-bottom:20px">
+          <div class="bank-box-title" style="color:#2979FF">NayaPay</div>
+          <div class="bank-row"><div class="bank-label">Account Title</div><div class="bank-value">Akash Alam</div></div>
+          <div class="bank-row">
+            <div class="bank-label">NayaPay Number</div>
+            <div class="bank-value">+923198810859 <button class="copy-btn" onclick="copyFeeText('+923198810859',this)">Copy</button></div>
+          </div>
+          <div class="bank-row"><div class="bank-label">Amount</div><div class="bank-value"><span class="amount-highlight">PKR 3,000</span></div></div>
+        </div>
+
+        <div class="modal-msg" id="modal-msg"></div>
+
+        <div class="mfield">
+          <label>Transaction ID (TRX ID)</label>
+          <input type="text" id="modal-trx" placeholder="Enter your transaction ID" />
+        </div>
+
+        <div class="mfield">
+          <label>Payment Screenshot</label>
+          <div class="upload-area" id="modal-upload-area">
+            <input type="file" id="modal-screenshot" accept="image/*" onchange="handleModalFile(this)" />
+            <div class="upload-text" id="modal-upload-text">Click to upload screenshot</div>
+            <div class="upload-sub">JPG, PNG supported</div>
+            <div class="upload-filename" id="modal-upload-filename"></div>
+          </div>
+        </div>
+
+        <button class="modal-submit" id="modal-submit-btn" onclick="submitMonthlyFee()">Submit Payment Proof</button>
+      </div>
+
+      <!-- Pending view -->
+      <div id="modal-pending-view" style="display:none" class="modal-pending">
+        <div class="modal-pending-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="modal-pending-title">Payment Under Review</div>
+        <div class="modal-pending-sub">Your monthly fee proof has been submitted. Admin will verify and confirm within 24 hours. Your store remains active in the meantime.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const _supabase = createClient(
+    'https://vlpozudvefnkkhvtjswi.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZscG96dWR2ZWZua2todnRqc3dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NzgxNDAsImV4cCI6MjA5MDI1NDE0MH0.0hRczlsHkDWcsJXGFA-HHRTZcYxsgy_ARhx6EAlN8T8'
+  );
+
+  // Set today's date
+  const now = new Date();
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-PK', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // ── MONTHLY FEE ──
+  let feeSelectedFile = null;
+  let currentUserId = null;
+
+  function openFeeModal() { document.getElementById('fee-modal').classList.add('open'); }
+  function closeFeeModal() { document.getElementById('fee-modal').classList.remove('open'); }
+
+  function handleModalFile(input) {
+    if (input.files && input.files[0]) {
+      feeSelectedFile = input.files[0];
+      document.getElementById('modal-upload-filename').textContent = feeSelectedFile.name;
+      document.getElementById('modal-upload-text').textContent = 'Screenshot selected';
+      document.getElementById('modal-upload-area').classList.add('has-file');
+    }
+  }
+
+  function copyFeeText(text, btn) {
+    navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+
+  async function loadFeeStatus(userId) {
+    const feeCard = document.getElementById('fee-card');
+    feeCard.style.display = 'flex';
+
+    // Get the initial approved payment to know when store started
+    const { data: initialPayment } = await _supabase
+      .from('subscription_payments')
+      .select('created_at, status')
+      .eq('user_id', userId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+
+    if (!initialPayment) return; // no approved payment yet
+
+    // Get latest monthly payment (any type, most recent)
+    const { data: lastPayment } = await _supabase
+      .from('subscription_payments')
+      .select('created_at, status, payment_type')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    const feeIcon = document.getElementById('fee-icon');
+    const feeTitle = document.getElementById('fee-title');
+    const feeSub = document.getElementById('fee-sub');
+    const feeBtn = document.getElementById('fee-btn');
+
+    // If latest payment is pending monthly fee
+    if (lastPayment && lastPayment.payment_type === 'monthly' && lastPayment.status === 'pending') {
+      feeCard.classList.add('pending-fee');
+      feeIcon.className = 'fee-icon';
+      feeTitle.textContent = 'Monthly Fee — Under Review';
+      feeSub.textContent = 'Your payment proof has been submitted. Admin will verify within 24 hours.';
+      feeBtn.outerHTML = '<span class="fee-badge pending-fee">⏳ Pending Approval</span>';
+      // show pending view in modal too in case they open it
+      document.getElementById('modal-form-view').style.display = 'none';
+      document.getElementById('modal-pending-view').style.display = 'block';
+      return;
+    }
+
+    // Calculate next due date: 30 days after last approved payment
+    const lastApproved = lastPayment && lastPayment.status === 'approved'
+      ? new Date(lastPayment.created_at)
+      : new Date(initialPayment.created_at);
+
+    const nextDue = new Date(lastApproved);
+    nextDue.setDate(nextDue.getDate() + 30);
+    const today = new Date();
+    const daysUntilDue = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
+    const dueDateStr = nextDue.toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (daysUntilDue > 7) {
+      // Paid & not due yet
+      feeCard.classList.add('paid');
+      feeIcon.className = 'fee-icon green';
+      feeIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+      feeTitle.textContent = 'Monthly Fee Paid';
+      feeSub.textContent = 'Next payment due: ' + dueDateStr;
+      feeBtn.outerHTML = '<span class="fee-badge paid">✓ Paid for this month</span>';
+    } else if (daysUntilDue > 0) {
+      // Due soon — show button
+      feeTitle.textContent = 'Monthly Fee Due Soon';
+      feeSub.textContent = 'Due in ' + daysUntilDue + ' day' + (daysUntilDue === 1 ? '' : 's') + ' — ' + dueDateStr;
+    } else {
+      // Overdue
+      feeTitle.textContent = 'Monthly Fee Overdue';
+      feeSub.textContent = 'Due date was ' + dueDateStr + '. Please pay to avoid store deactivation.';
+      feeBtn.style.background = 'var(--danger)';
+    }
+  }
+
+  async function submitMonthlyFee() {
+    const trxId = document.getElementById('modal-trx').value.trim();
+    if (!trxId) { showModalMsg('Please enter your Transaction ID.'); return; }
+    if (!feeSelectedFile) { showModalMsg('Please upload your payment screenshot.'); return; }
+
+    const btn = document.getElementById('modal-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+
+    const fileExt = feeSelectedFile.name.split('.').pop();
+    const fileName = currentUserId + '_monthly_' + Date.now() + '.' + fileExt;
+
+    const { error: uploadError } = await _supabase.storage
+      .from('payment-screenshots')
+      .upload(fileName, feeSelectedFile);
+
+    if (uploadError) {
+      showModalMsg('Screenshot upload failed: ' + uploadError.message);
+      btn.disabled = false; btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    const { data: urlData } = _supabase.storage.from('payment-screenshots').getPublicUrl(fileName);
+
+    const { data: { user } } = await _supabase.auth.getUser();
+
+    const { error: insertError } = await _supabase
+      .from('subscription_payments')
+      .insert({
+        user_id: currentUserId,
+        full_name: user.user_metadata?.full_name || '',
+        email: user.email,
+        amount: 3000,
+        trx_id: trxId,
+        screenshot_url: urlData.publicUrl,
+        status: 'pending',
+        payment_type: 'monthly'
+      });
+
+    if (insertError) {
+      showModalMsg('Submission failed: ' + insertError.message);
+      btn.disabled = false; btn.textContent = 'Submit Payment Proof';
+      return;
+    }
+
+    // Show pending view
+    document.getElementById('modal-form-view').style.display = 'none';
+    document.getElementById('modal-pending-view').style.display = 'block';
+
+    // Update the card without page reload
+    const feeCard = document.getElementById('fee-card');
+    feeCard.className = 'fee-card pending-fee animate';
+    document.getElementById('fee-title').textContent = 'Monthly Fee — Under Review';
+    document.getElementById('fee-sub').textContent = 'Your payment proof has been submitted. Admin will verify within 24 hours.';
+    const feeBtn = document.getElementById('fee-btn');
+    if (feeBtn) feeBtn.outerHTML = '<span class="fee-badge pending-fee">⏳ Pending Approval</span>';
+  }
+
+  function showModalMsg(text) {
+    const el = document.getElementById('modal-msg');
+    el.textContent = text;
+    el.className = 'modal-msg error';
+  }
+
+  // Close modal on overlay click
+  document.getElementById('fee-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFeeModal();
+  });
+
+  async function init() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) { window.location.href = '../index.html'; return; }
+
+   try {
+  const { data: store } = await _supabase
+    .from('stores')
+    .select('id')
+    .eq('owner_id', session.user.id)
+    .single();
+
+  if (!store) {
+    const { data: payment } = await _supabase
+      .from('subscription_payments')
+      .select('status')
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (!payment || payment.status !== 'approved') {
+      window.location.href = 'payment.html';
+      return;
+    }
+  }
+} catch(e) {
+  // continue loading dashboard
+}
+
+    const user = session.user;
+    currentUserId = user.id;
+    const name = user.user_metadata?.full_name || user.email;
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('user-avatar').textContent = initials;
+
+    // Check if store exists
+    const { data: store } = await _supabase
+      .from('stores')
+      .select('*')
+      .eq('owner_id', user.id)
+      .single();
+
+    if (store) {
+      document.getElementById('setup-banner').classList.add('hidden');
+      document.getElementById('status-dot').classList.add('live');
+      document.getElementById('status-text').textContent = store.name;
+
+      // Load stats
+      const { count: productCount } = await _supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_id', store.id);
+
+      const { data: orders } = await _supabase
+        .from('orders')
+        .select('*')
+        .eq('store_id', store.id);
+
+      const totalOrders = orders?.length || 0;
+      const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0;
+      const revenue = orders?.filter(o => o.status === 'delivered')
+        .reduce((sum, o) => sum + Number(o.total_amount), 0) || 0;
+
+      document.getElementById('stat-products').textContent = productCount || 0;
+      document.getElementById('stat-orders').textContent = totalOrders;
+      document.getElementById('stat-pending').textContent = pendingOrders;
+      document.getElementById('stat-revenue').textContent = revenue.toLocaleString('en-PK');
+
+      // Load recent orders
+      if (totalOrders > 0) {
+        const recent = orders.slice(0, 5);
+        const tbody = recent.map(o => `
+          <tr>
+            <td><span class="order-id">#${o.id.slice(0,8).toUpperCase()}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString('en-PK')}</td>
+            <td>PKR ${Number(o.total_amount).toLocaleString('en-PK')}</td>
+            <td><span class="status-badge ${o.status}">${o.status}</span></td>
+          </tr>
+        `).join('');
+
+        document.getElementById('orders-container').innerHTML = `
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        `;
+      }
+    }
+
+    // Load monthly fee status
+    loadFeeStatus(user.id);
+
+    // Hide loading
+    document.getElementById('loading').style.display = 'none';
+  }
+
+  async function handleLogout() {
+    if (!confirm('Are you sure you want to sign out?')) return;
+    await _supabase.auth.signOut();
+    window.location.href = '../index.html';
+  }
+
+  init();
+
+  function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
