@@ -482,7 +482,7 @@ if (store) {
       if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); btn.disabled = false; return; }
       const { error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
       if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-    showMsg('Account created! Please check your email to confirm your account.', 'success');
+    showMsg('Account created! Please check your email to confirm your account. If you do not see it, check your spam or junk folder.', 'success');
 setTimeout(() => switchTab('login'), 1500);
     }
     btn.disabled = false;
