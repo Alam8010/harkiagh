@@ -597,7 +597,7 @@
       return matchCat && matchSearch;
     });
     renderProducts(filtered);
-    
+
   function renderProducts(products) {
     const grid = document.getElementById('products-grid');
     if (products.length === 0) {
@@ -611,7 +611,7 @@
     }
 
     grid.innerHTML = products.map(p => {
-      const img = p.image_urls?.[0] ? cdnImg(p.image_urls[0], 600) : null;
+      const img = p.image_urls?.[0];
       const inCart = cart.find(c => c.id === p.id);
       return `
         <div class="product-card" onclick="openProductModal('${p.id}')">
@@ -766,13 +766,13 @@
     } else {
       imgContainer.innerHTML = `
         <div style="position:relative;margin-bottom:12px">
-        <img id="pm-main-img" class="product-modal-img" src="${cdnImg(images[0], 800)}" style="margin-bottom:0" onclick="openFullscreenImg(images[0])" />
+        <img id="pm-main-img" class="product-modal-img" src="${images[0]}" style="margin-bottom:0" onclick="openFullscreenImg(this.src)" />
         </div>
         ${images.length > 1 ? `
         <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
           ${images.map((url, i) => `
-            <img src="${cdnImg(url, 200)}"
-              onclick="document.getElementById('pm-main-img').src='${cdnImg(url, 800)}';document.querySelectorAll('.thumb-img').forEach(t=>t.style.borderColor='transparent');this.style.borderColor='var(--green)'"
+            <img src="${url}"
+              onclick="document.getElementById('pm-main-img').src='${url}';document.querySelectorAll('.thumb-img').forEach(t=>t.style.borderColor='transparent');this.style.borderColor='var(--green)'"
               class="thumb-img"
               style="width:64px;height:64px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;border:2px solid ${i===0?'var(--green)':'transparent'};transition:border-color 0.15s"
             />
