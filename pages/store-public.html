@@ -956,24 +956,33 @@ async function handleLogout() {
     toggleCart();
 
     const summary = document.getElementById('order-summary');
-    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const storeGroups = {};
+    cart.forEach(item => {
+      const sid = item.storeId || currentStore.id;
+      if (!storeGroups[sid]) storeGroups[sid] = { storeName: item.storeName || currentStore.name, items: [] };
+      storeGroups[sid].items.push(item);
+    });
+    const numStores = Object.keys(storeGroups).length;
+    const itemsTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const deliveryTotal = 300 * numStores;
+    const grandTotal = itemsTotal + deliveryTotal;
 
-    summary.innerHTML = cart.map(item => `
+    summary.innerHTML = `
       <div class="order-summary-item">
         <span>${item.name} × ${item.qty}</span>
         <span>PKR ${Number(item.price * item.qty).toLocaleString('en-PK')}</span>
       </div>`).join('') + `
       <div class="order-summary-item">
         <span>Subtotal</span>
-        <span>PKR ${total.toLocaleString('en-PK')}</span>
+        <span>PKR ${itemsTotal.toLocaleString('en-PK')}</span>
       </div>
       <div class="order-summary-item">
-        <span>Delivery Charges</span>
-        <span>PKR 300</span>
+        <span>Delivery Charges (${numStores} store${numStores > 1 ? 's' : ''} × PKR 300)</span>
+        <span>PKR ${deliveryTotal.toLocaleString('en-PK')}</span>
       </div>
       <div class="order-summary-total">
         <span>Total</span>
-        <span>PKR ${(total + 300).toLocaleString('en-PK')}</span>
+        <span>PKR ${grandTotal.toLocaleString('en-PK')}</span>
       </div>`;
 
     if (currentCustomer?.address) {
