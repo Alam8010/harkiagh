@@ -967,11 +967,12 @@ async function handleLogout() {
     const deliveryTotal = 300 * numStores;
     const grandTotal = itemsTotal + deliveryTotal;
 
-    summary.innerHTML = `
-      <div class="order-summary-item">
-        <span>${item.name} × ${item.qty}</span>
-        <span>PKR ${Number(item.price * item.qty).toLocaleString('en-PK')}</span>
-      </div>`).join('') + `
+ summary.innerHTML = 
+      cart.map(item => `
+        <div class="order-summary-item">
+          <span>${item.name} × ${item.qty}</span>
+          <span>PKR ${Number(item.price * item.qty).toLocaleString('en-PK')}</span>
+        </div>`).join('') + `
       <div class="order-summary-item">
         <span>Subtotal</span>
         <span>PKR ${itemsTotal.toLocaleString('en-PK')}</span>
