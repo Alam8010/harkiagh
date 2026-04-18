@@ -258,7 +258,10 @@
     .order-summary-total span:last-child { color: var(--green); font-family: 'Bebas Neue', sans-serif; font-size: 20px; }
 
     /* PRODUCT DETAIL MODAL */
-    .product-modal-img { width: 100%; height: 280px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; background: var(--dark3); }
+    .product-modal-img { width: 100%; height: 280px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; background: var(--dark3); cursor: zoom-in; }
+    .img-fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+    .img-fullscreen-overlay.open { display: flex; }
+    .img-fullscreen-overlay img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
     .product-modal-img-placeholder { width: 100%; height: 280px; background: var(--dark3); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
     .product-modal-img-placeholder svg { width: 48px; height: 48px; fill: rgba(255,255,255,0.1); }
 
@@ -351,6 +354,9 @@
 
 <!-- Cart Sidebar -->
 <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="img-fullscreen-overlay" id="img-fullscreen-overlay" onclick="this.classList.remove('open')">
+  <img id="img-fullscreen-img" src="" />
+</div>
 <div class="cart-sidebar" id="cart-sidebar">
   <div class="cart-header">
     <div class="cart-title">Your Cart</div>
@@ -728,6 +734,11 @@
   }
 
   // ── PRODUCT MODAL ──
+  function openFullscreenImg(src) {
+    document.getElementById('img-fullscreen-img').src = src;
+    document.getElementById('img-fullscreen-overlay').classList.add('open');
+  }
+
   function openProductModal(productId) {
     selectedProduct = allProducts.find(p => p.id === productId);
     if (!selectedProduct) return;
@@ -753,7 +764,7 @@
     } else {
       imgContainer.innerHTML = `
         <div style="position:relative;margin-bottom:12px">
-          <img id="pm-main-img" class="product-modal-img" src="${images[0]}" style="margin-bottom:0" />
+        <img id="pm-main-img" class="product-modal-img" src="${images[0]}" style="margin-bottom:0" onclick="openFullscreenImg(this.src)" />
         </div>
         ${images.length > 1 ? `
         <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px">
