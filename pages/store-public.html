@@ -259,7 +259,7 @@
 
     /* PRODUCT DETAIL MODAL */
     .product-modal-img { width: 100%; height: 280px; object-fit: cover; border-radius: 10px; margin-bottom: 20px; background: var(--dark3); cursor: zoom-in; }
-    .img-fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+    .img-fullscreen-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9000; display: none; align-items: center; justify-content: center; cursor: zoom-out; }
     .img-fullscreen-overlay.open { display: flex; }
     .img-fullscreen-overlay img { max-width: 95vw; max-height: 95vh; object-fit: contain; border-radius: 8px; }
     .product-modal-img-placeholder { width: 100%; height: 280px; background: var(--dark3); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
@@ -281,7 +281,7 @@
       .cart-sidebar { width: 100%; height: 100dvh; top: 0 !important; position: fixed !important; z-index: 9999 !important; }
       .hero-name { font-size: 28px; }
     }
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green); color: var(--dark); padding: 10px 24px; border-radius: 100px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; opacity: 0; transition: all 0.3s ease; z-index: 99999; pointer-events: none; }
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green); color: var(--dark); padding: 10px 24px; border-radius: 100px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 1px; opacity: 0; transition: all 0.3s ease; z-index: 999999; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
@@ -580,6 +580,16 @@
       cats.map(c => `<div class="cat-pill" onclick="setCat('${c}')">${c}</div>`).join('');
   }
 
+    function filterProducts() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    let filtered = allProducts.filter(p => {
+      const matchCat = !selectedCategory || p.category === selectedCategory;
+      const matchSearch = p.name.toLowerCase().includes(search) || (p.description || '').toLowerCase().includes(search);
+      return matchCat && matchSearch;
+    });
+    renderProducts(filtered);
+  }
+
   function setCat(cat) {
     selectedCategory = cat;
     document.querySelectorAll('.cat-pill').forEach(p => {
@@ -863,9 +873,9 @@
       if (err) err.style.display = 'block';
       return;
     }
-    addToCart(selectedProduct.id, window._selectedSize);
-    closeModal('product-modal');
-    showToast('✓ Added to cart!');
+  addToCart(selectedProduct.id, window._selectedSize);
+    setTimeout(() => showToast('✓ Added to cart!'), 100);
+    setTimeout(() => closeModal('product-modal'), 400);
   }
 
   // ── AUTH ──
