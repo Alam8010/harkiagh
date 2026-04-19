@@ -604,6 +604,19 @@
           <input type="number" id="prod-stock" placeholder="e.g. 10" min="0" />
 <div style="font-size:11px;color:var(--gray);margin-top:6px">If you select sizes above, total stock will be calculated automatically from size quantities.</div>
         </div>
+
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="has-variants" onchange="toggleVariants()" style="width:16px;height:16px;accent-color:var(--green);" />
+            This product has variants (e.g. Jersey only / Jersey + Short)
+          </label>
+        </div>
+
+        <div id="variants-section" style="display:none;margin-top:8px;">
+          <div style="font-size:12px;color:var(--gray);margin-bottom:10px;">Each variant can have its own name and price. Stock is shared.</div>
+          <div id="variants-list"></div>
+          <button type="button" onclick="addVariantRow()" style="margin-top:8px;padding:8px 16px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:var(--green);border-radius:8px;font-size:13px;cursor:pointer;">➕ Add Variant</button>
+        </div>
       </div>
 
       <div class="field">
@@ -843,6 +856,21 @@ const statusBadge = p.status === 'approved'
     setSizeFields(p.size_type || '', p.sizes || [], p.size_stock || {});
     document.getElementById('modal-msg').className = 'msg';
 
+    // Load variants if product has them
+    const hasVariants = p.variants && p.variants.length > 0;
+    document.getElementById('has-variants').checked = hasVariants;
+    document.getElementById('variants-section').style.display = hasVariants ? 'block' : 'none';
+    document.getElementById('variants-list').innerHTML = '';
+    if (hasVariants) {
+      p.variants.forEach(v => {
+        addVariantRow();
+        const rows = document.querySelectorAll('#variants-list > div');
+        const lastRow = rows[rows.length - 1];
+        lastRow.querySelector('.variant-name').value = v.name;
+        lastRow.querySelector('.variant-price').value = v.price;
+      });
+    }
+
     const previews = document.getElementById('img-previews');
     previews.innerHTML = uploadedImageUrls.map((url, i) => `
       <div class="img-preview-item">
@@ -1027,7 +1055,22 @@ const statusBadge = p.status === 'approved'
       size_type: sizeType || null,
       sizes: sizes && sizes.length > 0 ? sizes : null,
       size_stock: Object.keys(sizeStock).length > 0 ? sizeStock : null,
+      variants: null,
     };
+
+    // Save variants if enabled
+    if (document.getElementById('has-variants').checked) {
+      const variantRows = document.querySelectorAll('#variants-list > div');
+      const variants = [];
+      variantRows.forEach(row => {
+        const name = row.querySelector('.variant-name').value.trim();
+        const price = parseFloat(row.querySelector('.variant-price').value);
+        if (name && !isNaN(price) && price > 0) {
+          variants.push({ name, price });
+        }
+      });
+      if (variants.length > 0) productData.variants = variants;
+    }
 
     let error;
 
@@ -1075,6 +1118,27 @@ const statusBadge = p.status === 'approved'
   function toggleMobileMenu() {
   document.getElementById('mobile-menu').classList.toggle('open');
 }
+
+function toggleVariants() {
+    const checked = document.getElementById('has-variants').checked;
+    document.getElementById('variants-section').style.display = checked ? 'block' : 'none';
+    if (checked && document.getElementById('variants-list').children.length === 0) {
+      addVariantRow();
+      addVariantRow();
+    }
+  }
+
+  function addVariantRow() {
+    const list = document.getElementById('variants-list');
+    const row = document.createElement('div');
+    row.style = 'display:flex;gap:10px;margin-bottom:8px;align-items:center;';
+    row.innerHTML = `
+      <input type="text" placeholder="Variant name (e.g. Jersey only)" style="flex:2;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#fff;font-family:Barlow,sans-serif;font-size:13px;" class="variant-name" />
+      <input type="number" placeholder="Price" min="0" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:#fff;font-family:Barlow,sans-serif;font-size:13px;" class="variant-price" />
+      <button type="button" onclick="this.parentElement.remove()" style="padding:8px 12px;background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.2);color:#ff3b3b;border-radius:8px;font-size:13px;cursor:pointer;">✕</button>
+    `;
+    list.appendChild(row);
+  }
 </script>
 </body>
 </html>

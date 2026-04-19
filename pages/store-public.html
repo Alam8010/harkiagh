@@ -761,6 +761,17 @@
     setTimeout(() => toast.classList.remove('show'), 2000);
   }
 
+  function selectVariant(index, price, el) {
+    window._selectedVariant = index;
+    document.querySelectorAll('.variant-option').forEach(v => {
+      v.style.border = '1px solid rgba(255,255,255,0.1)';
+      v.style.background = 'transparent';
+    });
+    el.style.border = '1px solid var(--green)';
+    el.style.background = 'rgba(0,230,118,0.05)';
+    document.getElementById('pm-price').textContent = 'PKR ' + Number(price).toLocaleString('en-PK');
+  }
+
   function openFullscreenImg(src) {
     document.getElementById('img-fullscreen-img').src = src;
     document.getElementById('img-fullscreen-overlay').classList.add('open');
@@ -773,9 +784,10 @@
     document.getElementById('pm-name').textContent = selectedProduct.name;
     document.getElementById('pm-cat').textContent = selectedProduct.category || '';
     document.getElementById('pm-desc').textContent = selectedProduct.description || 'No description available.';
-    document.getElementById('pm-price').textContent = 'PKR ' + Number(selectedProduct.price).toLocaleString('en-PK');
+    const hasVariants = selectedProduct.variants && selectedProduct.variants.length > 0;
+    document.getElementById('pm-price').textContent = hasVariants ? '' : 'PKR ' + Number(selectedProduct.price).toLocaleString('en-PK');
 
-    var stockEl = document.getElementById('pm-stock');
+   var stockEl = document.getElementById('pm-stock');
     if (selectedProduct.stock_qty === 0) {
       stockEl.textContent = 'Out of stock';
       stockEl.style.color = 'var(--danger)';
@@ -783,6 +795,26 @@
       stockEl.textContent = selectedProduct.stock_qty + ' in stock';
       stockEl.style.color = '';
     }
+
+    // Show variants if product has them
+    const variantsEl = document.getElementById('pm-variants');
+    if (variantsEl) variantsEl.remove();
+    if (hasVariants) {
+      window._selectedVariant = null;
+      const variantsDiv = document.createElement('div');
+      variantsDiv.id = 'pm-variants';
+      variantsDiv.style = 'margin:16px 0;';
+      variantsDiv.innerHTML = `
+        <div style="font-size:11px;font-weight:700;color:var(--gray);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">SELECT OPTION</div>
+        ${selectedProduct.variants.map((v, i) => `
+          <div onclick="selectVariant(${i}, ${v.price}, this)" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;" class="variant-option">
+            <span style="font-size:14px;font-weight:500;">${v.name}</span>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--green);">PKR ${Number(v.price).toLocaleString('en-PK')}</span>
+          </div>`).join('')}
+      `;
+      stockEl.after(variantsDiv);
+    }
+    
 
     const imgContainer = document.getElementById('pm-img-container');
     const images = selectedProduct.image_urls || [];
@@ -868,6 +900,10 @@
 
   function addToCartFromModal() {
     if (!selectedProduct) return;
+    if (selectedProduct.variants && selectedProduct.variants.length > 0 && (window._selectedVariant === null || window._selectedVariant === undefined)) {
+      showToast('⚠️ Please select an option first!');
+      return;
+    }
     if (selectedProduct.sizes && selectedProduct.sizes.length > 0 && !window._selectedSize) {
       var err = document.getElementById('size-error');
       if (err) err.style.display = 'block';
