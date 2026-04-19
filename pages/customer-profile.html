@@ -104,6 +104,19 @@
     .status-badge.cancelled { background: rgba(255,59,59,0.1); color: var(--danger); }
 
     .empty-orders { text-align: center; padding: 32px; color: var(--gray); font-size: 14px; }
+    .order-details-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .order-details-overlay.open { display: flex; }
+    .order-details-modal { background: #111; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 24px; }
+    .order-details-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; margin-bottom: 4px; }
+    .order-details-sub { font-size: 12px; color: var(--gray); margin-bottom: 20px; }
+    .order-item-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-item-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; background: rgba(255,255,255,0.05); flex-shrink: 0; }
+    .order-item-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .order-item-meta { font-size: 12px; color: var(--gray); }
+    .order-item-price { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--green); margin-left: auto; flex-shrink: 0; }
+    .order-details-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.07); }
+    .order-details-close { width: 100%; margin-top: 16px; padding: 12px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: var(--white); border-radius: 10px; font-family: 'Barlow', sans-serif; font-size: 14px; cursor: pointer; }
 
     /* DANGER ZONE */
     .danger-zone { background: rgba(255,59,59,0.04); border: 1px solid rgba(255,59,59,0.15); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
@@ -125,6 +138,18 @@
 </head>
 <body>
 
+<div class="order-details-overlay" id="order-details-overlay">
+  <div class="order-details-modal">
+    <div class="order-details-title" id="od-title">Order Details</div>
+    <div class="order-details-sub" id="od-sub"></div>
+    <div id="od-items"></div>
+    <div class="order-details-total">
+      <span style="font-size:13px;color:var(--gray)">Total</span>
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green)" id="od-total"></span>
+    </div>
+    <button class="order-details-close" onclick="document.getElementById('order-details-overlay').classList.remove('open')">Close</button>
+  </div>
+</div>
 <div id="loading">
   <div class="spinner"></div>
   <div class="loading-text">Loading profile...</div>
@@ -368,12 +393,42 @@
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <div class="order-amount">PKR ${Number(o.total_amount).toLocaleString('en-PK')}</div>
           <span class="status-badge ${o.status}">${o.status}</span>
+          <button onclick="viewOrderDetails('${o.id}','${o.stores?.name || 'Store'}','${new Date(o.created_at).toLocaleDateString('en-PK',{year:'numeric',month:'short',day:'numeric'})}','${o.total_amount}')" style="padding:6px 14px;background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:var(--green);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">VIEW</button>
           ${(o.status === 'pending' || o.status === 'confirmed') ? `<button onclick="cancelOrder('${o.id}')" style="padding:6px 14px;background:transparent;border:1px solid rgba(255,59,59,0.4);color:#ff3b3b;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">CANCEL</button>` : ''}
         </div>
       </div>`;
 
     activeContainer.innerHTML = activeOrders.length ? activeOrders.map(renderOrder).join('') : '<div class="empty-orders">No active orders.</div>';
     historyContainer.innerHTML = historyOrders.length ? historyOrders.map(renderOrder).join('') : '<div class="empty-orders">No completed orders yet.</div>';
+  }
+
+  async function viewOrderDetails(orderId, storeName, date, total) {
+    document.getElementById('od-title').textContent = storeName;
+    document.getElementById('od-sub').textContent = '#' + orderId.slice(0,8).toUpperCase() + ' · ' + date;
+    document.getElementById('od-total').textContent = 'PKR ' + Number(total).toLocaleString('en-PK');
+    document.getElementById('od-items').innerHTML = '<div style="color:var(--gray);font-size:13px;padding:16px 0;">Loading items...</div>';
+    document.getElementById('order-details-overlay').classList.add('open');
+
+    const { data: items } = await _supabase
+      .from('order_items')
+      .select('*, products(name, image_urls)')
+      .eq('order_id', orderId);
+
+    if (!items || items.length === 0) {
+      document.getElementById('od-items').innerHTML = '<div style="color:var(--gray);font-size:13px;padding:16px 0;">No items found.</div>';
+      return;
+    }
+
+    document.getElementById('od-items').innerHTML = items.map(item => `
+      <div class="order-item-row">
+        ${item.products?.image_urls?.[0] ? `<img class="order-item-img" src="${item.products.image_urls[0]}" />` : `<div class="order-item-img"></div>`}
+        <div>
+          <div class="order-item-name">${item.products?.name || 'Product'}</div>
+          <div class="order-item-meta">Qty: ${item.quantity}${item.selected_size ? ' · Size: ' + item.selected_size : ''}</div>
+          <div class="order-item-meta">PKR ${Number(item.unit_price).toLocaleString('en-PK')} each</div>
+        </div>
+        <div class="order-item-price">PKR ${Number(item.unit_price * item.quantity).toLocaleString('en-PK')}</div>
+      </div>`).join('');
   }
 
   async function cancelOrder(orderId) {
