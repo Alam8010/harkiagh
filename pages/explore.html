@@ -420,11 +420,16 @@
       if (!name || !email || !password) { showAuthMsg('Name, email and password are required.', 'error'); btn.disabled = false; return; }
       const { data, error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
       if (error) { showAuthMsg(error.message, 'error'); btn.disabled = false; return; }
+      if (data?.user?.identities?.length === 0) {
+        showAuthMsg('An account with this email already exists. Please login instead.', 'error');
+        btn.disabled = false;
+        return;
+      }
       if (data.user) {
         await _supabase.from('customers').insert({ user_id: data.user.id, full_name: name, phone: phone || null });
-        showAuthMsg('Account created! Please check your email to confirm your account.', 'success');
+        showAuthMsg('Account created! Please check your email. If you do not see it, check your spam folder.', 'success');
         await checkAuth();
-        setTimeout(() => closeAuthModal(), 1500);
+        setTimeout(() => closeAuthModal(), 4000);
       }
     }
     btn.disabled = false;

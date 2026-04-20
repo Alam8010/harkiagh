@@ -1000,13 +1000,13 @@
 
       if (data.user && data.user.identities && data.user.identities.length === 0) {
         showAuthMsg('An account with this email already exists. Please login instead.', 'error');
-        setTimeout(() => openAuthModal('login'), 2000);
+        setTimeout(() => openAuthModal('login'), 4000);
         btn.disabled = false; return;
       }
 
       if (data.user) {
         showAuthMsg('Account created! Please check your email to confirm, then login.', 'success');
-        setTimeout(() => openAuthModal('login'), 2000);
+        setTimeout(() => openAuthModal('login'), 4000);
       }
     }
     btn.disabled = false;
