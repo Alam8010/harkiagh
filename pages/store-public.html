@@ -462,7 +462,6 @@
     <div class="modal-body">
       <div id="pm-img-container"></div>
       <div class="product-cat" id="pm-cat"></div>
-      <div style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:16px" id="pm-desc"></div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green)" id="pm-price"></div>
@@ -473,6 +472,7 @@
           Add to Cart
         </button>
       </div>
+      <div style="font-size:14px;color:rgba(255,255,255,0.6);line-height:1.7;margin-top:16px" id="pm-desc"></div>
     </div>
   </div>
 </div>
@@ -783,7 +783,14 @@
 
     document.getElementById('pm-name').textContent = selectedProduct.name;
     document.getElementById('pm-cat').textContent = selectedProduct.category || '';
-    document.getElementById('pm-desc').textContent = selectedProduct.description || 'No description available.';
+    const descEl = document.getElementById('pm-desc');
+    const descText = selectedProduct.description || 'No description available.';
+    const descLines = descText.split('\n').filter(l => l.trim() !== '');
+    if (descLines.length > 1) {
+      descEl.innerHTML = '<ul style="padding-left:16px;margin:0;">' + descLines.map(l => `<li style="margin-bottom:4px;">${l.trim()}</li>`).join('') + '</ul>';
+    } else {
+      descEl.textContent = descText;
+    }
     const hasVariants = selectedProduct.variants && selectedProduct.variants.length > 0;
     document.getElementById('pm-price').textContent = hasVariants ? '' : 'PKR ' + Number(selectedProduct.price).toLocaleString('en-PK');
 
