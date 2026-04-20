@@ -488,10 +488,16 @@ if (store) {
       const password = document.getElementById('signup-password').value;
       if (!name || !email || !password) { showMsg('Please fill in all fields.', 'error'); btn.disabled = false; return; }
       if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); btn.disabled = false; return; }
-      const { error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+      const { data: signUpData, error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
       if (error) { showMsg(error.message, 'error'); btn.disabled = false; return; }
-    showMsg('Account created! Please check your email to confirm your account. If you do not see it, check your spam or junk folder.', 'success');
-setTimeout(() => switchTab('login'), 1500);
+      if (signUpData?.user?.identities?.length === 0) {
+        showMsg('An account with this email already exists. Please log in instead.', 'error');
+        btn.disabled = false;
+        setTimeout(() => switchTab('login'), 4000);
+        return;
+      }
+      showMsg('Account created! Please check your email to confirm your account. If you do not see it, check your spam or junk folder.', 'success');
+      setTimeout(() => switchTab('login'), 4000);
     }
     btn.disabled = false;
   }
