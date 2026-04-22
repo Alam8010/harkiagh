@@ -883,6 +883,9 @@ const statusBadge = p.status === 'approved'
 
   function closeModal() {
     document.getElementById('modal').classList.remove('open');
+    const btn = document.getElementById('modal-save-btn');
+    btn.disabled = false;
+    btn.textContent = 'Save Product';
   }
 
   function updateSizeOptions() {
